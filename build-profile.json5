@@ -1,0 +1,74 @@
+{
+  "app": {
+    "signingConfigs": [
+      {
+        "name": "default",
+        "type": "HarmonyOS",
+        "material": {
+          "certpath": "C:\\Users\\conra\\.ohos\\config\\default_TickAuth_qOPjDg_RL7HRCNyenzXbb7YwG6HO43KlOThv1max8FA=.cer",
+          "storePassword": "0000001A1956CA0BE75626A63A6E23659C333FC018687C3852B38579E85B1FF661290B70216C9832CF2E",
+          "keyAlias": "debugKey",
+          "keyPassword": "0000001A8E5E823D870436869968A8E7261392C0131728D734907228FEDE065F3DFE8026B879EEF23939",
+          "profile": "C:\\Users\\conra\\.ohos\\config\\default_TickAuth_qOPjDg_RL7HRCNyenzXbb7YwG6HO43KlOThv1max8FA=.p7b",
+          "signAlg": "SHA256withECDSA",
+          "storeFile": "C:\\Users\\conra\\.ohos\\config\\default_TickAuth_qOPjDg_RL7HRCNyenzXbb7YwG6HO43KlOThv1max8FA=.p12"
+        }
+      }
+    ],
+    "products": [
+      {
+        "name": "default",
+        "signingConfig": "default",
+        "compatibleSdkVersion": "5.0.0(12)",
+        "runtimeOS": "HarmonyOS",
+        "buildOption": {
+          "packOptions": {
+            "buildAppSkipSignHap": true
+          },
+          "strictMode": {
+            "caseSensitiveCheck": true,
+            "useNormalizedOHMUrl": true
+          }
+        }
+      }
+    ],
+    "buildModeSet": [
+      {
+        "name": "debug",
+      },
+      {
+        "name": "release"
+      }
+    ]
+  },
+  "modules": [
+    {
+      "name": "phone",
+      "srcPath": "./products/phone",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "utils",
+      "srcPath": "./common/utils"
+    },
+    {
+      "name": "totp",
+      "srcPath": "./features/totp"
+    },
+    {
+      "name": "homepage",
+      "srcPath": "./features/homepage",
+    },
+    {
+      "name": "settings",
+      "srcPath": "./features/settings",
+    }
+  ]
+}

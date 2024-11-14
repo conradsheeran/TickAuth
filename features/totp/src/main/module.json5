@@ -1,0 +1,11 @@
+{
+  "module": {
+    "name": "totp",
+    "type": "har",
+    "deviceTypes": [
+      "default",
+      "tablet",
+      "2in1"
+    ]
+  }
+}

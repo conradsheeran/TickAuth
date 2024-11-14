@@ -1,0 +1,24 @@
+{
+  "color": [
+    {
+      "name": "start_window_background",
+      "value": "#FFFFFF"
+    },
+    {
+      "name": "background",
+      "value": "#F8F4ED"
+    },
+    {
+      "name": "toggleBackground",
+      "value": "#66A9C9"
+    },
+    {
+      "name": "titleBar",
+      "value": "#93B5CF"
+    },
+    {
+      "name": "toolBar",
+      "value": "#93B5CF"
+    }
+  ]
+}

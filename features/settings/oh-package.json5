@@ -1,0 +1,9 @@
+{
+  "name": "settings",
+  "version": "1.0.0",
+  "description": "Please describe the basic information.",
+  "main": "Index.ets",
+  "author": "Yang He",
+  "license": "GPL-3.0",
+  "dependencies": {}
+}

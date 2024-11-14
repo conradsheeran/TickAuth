@@ -1,0 +1,14 @@
+{
+  "name": "phone",
+  "version": "1.0.0",
+  "description": "Please describe the basic information.",
+  "main": "",
+  "author": "Yang He",
+  "license": "GPL-3.0",
+  "dependencies": {
+    "utils": "file:../../common/utils",
+    "totp": "file:../../features/totp",
+    "homepage": "file:../../features/homepage",
+    "settings": "file:../../features/settings"
+  }
+}
