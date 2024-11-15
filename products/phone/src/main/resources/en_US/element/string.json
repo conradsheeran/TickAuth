@@ -13,80 +13,40 @@
       "value": "Tick Authenticator"
     },
     {
-      "name": "menuContent_1",
-      "value": "Setup"
-    },
-    {
-      "name": "menuContent_2",
-      "value": "Feedback"
-    },
-    {
-      "name": "menuContent_3",
-      "value": "Donate"
-    },
-    {
-      "name": "WarningTitle",
-      "value": "Disclaimer"
-    },
-    {
-      "name": "WarningContent_1",
-      "value": "1. This app is intended solely as a tool for user convenience. Any actions, activities, or outcomes resulting from the use of this app are the sole responsibility of the user. The app developers shall not be held liable for any user actions or the legal consequences, whether direct or indirect, resulting from the use of the app."
-    },
-    {
-      "name": "WarningContent_2",
-      "value": "2. Users are responsible for ensuring that they comply with all applicable laws and regulations of their country or region when using this app. The app must not be used for any illegal, unauthorized, or unethical activities. The app developers strongly advise users to operate within legal boundaries, and any legal issues or consequences arising from misuse of the app are the sole responsibility of the user."
-    },
-    {
-      "name": "WarningPageButton_1",
-      "value": "Agree and Continue"
-    },
-    {
-      "name": "WarningPageButton_2",
-      "value": "Disagree"
-    },
-    {
-      "name": "toolBarItem1",
-      "value": "HOME"
-    },
-    {
-      "name": "questionmarkTitle",
-      "value": "Usage"
-    },
-    {
-      "name": "WarningContent_3",
-      "value": "3. This app may include third-party services or content, and the developers do not guarantee the accuracy, reliability, or completeness of any such information. Users should independently verify the validity of any information accessed through the app. The developers will not be held responsible for any losses or liabilities caused by reliance on third-party content or services."
-    },
-    {
-      "name": "WarningContent_4",
-      "value": "4. The app may provide access to third-party websites or services through interfaces or links. The developers are not responsible for the content, privacy policies, or terms of use of any third-party platforms. Users are advised to follow the respective terms of use of third-party services and will be solely responsible for any related consequences."
-    },
-    {
-      "name": "WarningContent_5",
-      "value": "5. This disclaimer may be updated from time to time in response to changes in laws or operational needs. The developers reserve the right to modify this disclaimer without prior notice. By continuing to use the app, the user agrees to any modifications made to this disclaimer."
-    },
-    {
-      "name": "toolBarItem2",
-      "value": "Settings"
-    },
-    {
-      "name": "reasonManageVPN",
-      "value": "reason"
-    },
-    {
-      "name": "questionmarkContent1",
-      "value": "content1"
-    },
-    {
-      "name": "proxyTitle",
-      "value": "Proxy"
-    },
-    {
-      "name": "settingsTitle",
-      "value": "Settings"
-    },
-    {
       "name": "Title",
       "value": "Tick Authenticator"
+    },
+    {
+      "name": "Disclaimer_title",
+      "value": "Welcome to Tick Authenticator software."
+    },
+    {
+      "name": "Disclaimer_content1",
+      "value": "1. This application is a tool-based application designed to provide convenient services to users. Any actions, operations, and their outcomes performed by users while using this application are the sole responsibility of the users. The developers of this application shall not be held liable for users' actions or any direct or indirect legal responsibilities arising from them."
+    },
+    {
+      "name": "Disclaimer_content2",
+      "value": "2. We fully respect users' privacy rights and protect your data security in accordance with applicable laws, regulations, and industry-standard security practices."
+    },
+    {
+      "name": "Disclaimer_PrivacyPolicyStatement_url",
+      "value": "https://agreement-drcn.hispace.dbankcloud.cn/index.html?lang=zh&agreementId=1554645211815096704"
+    },
+    {
+      "name": "Disclaimer_PrivacyPolicyStatement_title",
+      "value": "\"Statement on Tick Authenticator and Privacy\""
+    },
+    {
+      "name": "Disclaimer_PrivacyPolicyStatement_explanation",
+      "value": " (hereinafter referred to as \"this Statement\") to help you understand how we collect, use, protect, and store your personal data. Please read this Statement carefully. If you have any questions, please let us know."
+    },
+    {
+      "name": "Disclaimer_confirm",
+      "value": " Agree and Continue"
+    },
+    {
+      "name": "Disclaimer_cancel",
+      "value": "Disagree"
     }
   ]
 }

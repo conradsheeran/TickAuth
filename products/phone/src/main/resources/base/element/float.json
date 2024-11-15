@@ -1,36 +1,36 @@
 {
   "float": [
     {
-      "name": "title",
-      "value": "28.00"
+      "name": "Title",
+      "value": "30.0"
     },
     {
       "name": "BorderRadius",
       "value": "16.0"
     },
     {
-      "name": "subtitle",
-      "value": "20.0"
+      "name": "Disclaimer_title",
+      "value": "24.0"
     },
     {
-      "name": "IconSize",
-      "value": "36.0"
+      "name": "Disclaimer_content",
+      "value": "16.0"
     },
     {
-      "name": "ListHeight",
-      "value": "64.0"
+      "name": "Disclaimer_PrivacyPolicyStatement_explanation",
+      "value": "12.0"
     },
     {
-      "name": "content",
-      "value": "14.0"
+      "name": "Disclaimer_Divider_height",
+      "value": "22.0"
     },
     {
-      "name": "warningTitle",
-      "value": "26.00"
+      "name": "Disclaimer_Divider_opacity",
+      "value": "0.6"
     },
     {
-      "name": "WarningContent",
-      "value": "18.0"
+      "name": "Disclaimer_Divider_margin",
+      "value": "9"
     }
   ]
 }

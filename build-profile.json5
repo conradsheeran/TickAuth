@@ -6,9 +6,9 @@
         "type": "HarmonyOS",
         "material": {
           "certpath": "C:\\Users\\conra\\.ohos\\config\\default_TickAuth_qOPjDg_RL7HRCNyenzXbb7YwG6HO43KlOThv1max8FA=.cer",
-          "storePassword": "0000001A1956CA0BE75626A63A6E23659C333FC018687C3852B38579E85B1FF661290B70216C9832CF2E",
+          "storePassword": "0000001BE9BF99A3487C02C2A91DF602AFFFD0762FFB31F1C897DBE38415B0F09E6A4455D0A41899911DF1",
           "keyAlias": "debugKey",
-          "keyPassword": "0000001A8E5E823D870436869968A8E7261392C0131728D734907228FEDE065F3DFE8026B879EEF23939",
+          "keyPassword": "0000001B14791273DFF2A8ACBA5FE34EF8B6F450F64294DDFE8E4AB591FE029604BFC52C13C79C759F9DB2",
           "profile": "C:\\Users\\conra\\.ohos\\config\\default_TickAuth_qOPjDg_RL7HRCNyenzXbb7YwG6HO43KlOThv1max8FA=.p7b",
           "signAlg": "SHA256withECDSA",
           "storeFile": "C:\\Users\\conra\\.ohos\\config\\default_TickAuth_qOPjDg_RL7HRCNyenzXbb7YwG6HO43KlOThv1max8FA=.p12"

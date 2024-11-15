@@ -1,4 +1,3 @@
-import { preferences } from '@kit.ArkData';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { Constants } from '../common/Constants';
 
@@ -6,74 +5,58 @@ const TAG: string = "CustomDialog_disclaimer";
 
 @CustomDialog
 export struct CustomDialog_disclaimer {
-  controller: CustomDialogController = new CustomDialogController({'builder': ''});
+  controller: CustomDialogController = new CustomDialogController({ builder: ''});
   cancel: Function = () => {};
   confirm: Function = () => {};
 
-  @State message_1: Resource = $r('app.string.WarningPageButton_1');
-  @State message_2: Resource = $r('app.string.WarningPageButton_2');
-
-  getDataPreferences(common: Object, file_name: string) {
-    return preferences.getPreferences(getContext(common), file_name);
-  }
-
   build() {
     Column() {
-      Text($r('app.string.WarningTitle'))
-        .fontSize($r('app.float.warningTitle'))
-        .textAlign(TextAlign.Start)
-        .margin({top: '10%'})
-        .width('90%')
+      Text($r('app.string.Disclaimer_title'))
+        .fontSize($r('app.float.Disclaimer_title'))
+        .textAlign(TextAlign.Center)
+        .margin({top: Constants.DISCLAIMER_TITLE_MARGIN})
+        .width(Constants.DISCLAIMER_WIDTH)
 
       List() {
         ListItem() {
-          Text($r('app.string.WarningContent_1'))
-            .fontSize($r('app.float.WarningContent'))
+          Text($r('app.string.Disclaimer_content1'))
+            .fontSize($r('app.float.Disclaimer_content'))
             .textAlign(TextAlign.Start)
-            .margin({top: '3%'})
-            .width('90%')
+            .margin({top: Constants.DISCLAIMER_CONTENT_MARGIN})
+            .width(Constants.DISCLAIMER_WIDTH)
         }
 
         ListItem() {
-          Text($r('app.string.WarningContent_2'))
-            .fontSize($r('app.float.WarningContent'))
+          Text($r('app.string.Disclaimer_content2'))
+            .fontSize($r('app.float.Disclaimer_content'))
             .textAlign(TextAlign.Start)
-            .margin({top: '3%'})
-            .width('90%')
+            .margin({top: Constants.DISCLAIMER_CONTENT_MARGIN})
+            .width(Constants.DISCLAIMER_WIDTH)
         }
 
         ListItem() {
-          Text($r('app.string.WarningContent_3'))
-            .fontSize($r('app.float.WarningContent'))
-            .textAlign(TextAlign.Start)
-            .margin({top: '3%'})
-            .width('90%')
+          Hyperlink($r('app.string.Disclaimer_PrivacyPolicyStatement_url'), $r('app.string.Disclaimer_PrivacyPolicyStatement_title'))
+            .height($r('app.float.Disclaimer_content'))
+            .margin({top: Constants.DISCLAIMER_CONTENT_MARGIN})
+            .width(Constants.DISCLAIMER_WIDTH)
         }
 
         ListItem() {
-          Text($r('app.string.WarningContent_4'))
-            .fontSize($r('app.float.WarningContent'))
+          Text($r('app.string.Disclaimer_PrivacyPolicyStatement_explanation'))
+            .fontSize($r('app.float.Disclaimer_PrivacyPolicyStatement_explanation'))
+            .fontColor(Color.Gray)
             .textAlign(TextAlign.Start)
-            .margin({top: '3%'})
-            .width('90%')
-        }
-
-        ListItem() {
-          Text($r('app.string.WarningContent_5'))
-            .fontSize($r('app.float.WarningContent'))
-            .textAlign(TextAlign.Start)
-            .margin({top: '3%'})
-            .width('90%')
+            .margin({top: Constants.DISCLAIMER_CONTENT_MARGIN})
+            .width(Constants.DISCLAIMER_WIDTH)
         }
       }
-      .width("90%")
-      .height("82%")
+      .width(Constants.DISCLAIMER_WIDTH)
+      .height(Constants.DISCLAIMER_CONTENT_HEIGHT)
+      .alignListItem(ListItemAlign.Center)
       .scrollBar(BarState.Auto)
 
-      Blank()
-
       Row() {
-        Button(this.message_1, {type: ButtonType.Normal})
+        Button($r('app.string.Disclaimer_confirm'), {type: ButtonType.Normal})
           .onClick(() => {
             this.controller.close();
             this.confirm();
@@ -82,11 +65,16 @@ export struct CustomDialog_disclaimer {
           .backgroundColor(Color.Transparent)
           .fontColor($r('sys.color.font_primary'))
           .borderRadius($r('app.float.BorderRadius'))
-          .width('48%')
+          .width(Constants.DISCLAIMER_BUTTON_WIDTH)
 
-        Divider().vertical(true).height(22).color($r('sys.color.font_primary')).opacity(0.6).margin({ left: 8, right: 8 })
+        Divider()
+          .vertical(true)
+          .height($r('app.float.Disclaimer_Divider_height'))
+          .color($r('sys.color.font_primary'))
+          .opacity($r('app.float.Disclaimer_Divider_opacity'))
+          .margin({ left: $r('app.float.Disclaimer_Divider_margin'), right: $r('app.float.Disclaimer_Divider_margin') })
 
-        Button(this.message_2, {type: ButtonType.Normal})
+        Button($r('app.string.Disclaimer_cancel'), {type: ButtonType.Normal})
           .onClick(() => {
             this.controller.close();
             this.cancel();
@@ -95,14 +83,15 @@ export struct CustomDialog_disclaimer {
           .backgroundColor(Color.Transparent)
           .fontColor(Color.Black)
           .borderRadius($r('app.float.BorderRadius'))
-          .width('48%')
+          .width(Constants.DISCLAIMER_BUTTON_WIDTH)
       }
-      .width('90%')
-      .height("8%")
-      .margin({ bottom: '3%' })
+      .width(Constants.DISCLAIMER_BUTTON_ENSEMBLE_WIDTH)
+      .height(Constants.DISCLAIMER_BUTTON_ENSEMBLE_HEIGHT)
+      .margin({ top: Constants.DISCLAIMER_BUTTON_ENSEMBLE_MARGIN })
     }
-    .height('100%')
-    .width('100%')
+    .height(Constants.DISCLAIMER_DIALOG_HEIGHT)
+    .width(Constants.DISCLAIMER_DIALOG_WIDTH)
+    .borderRadius($r('app.float.BorderRadius'))
     .backgroundColor($r('app.color.background'))
   }
 }

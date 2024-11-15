@@ -79,10 +79,10 @@ struct Index {
   };
 
   private tabsController: TabsController = new TabsController()
-  @Builder tabBuilder(title: ResourceStr, targetIndex: number, selectedImg: Resource, normalImg: Resource) {
+  @Builder tabBuilder(targetIndex: number, selectedImg: Resource, normalImg: Resource, title?: Resource) {
     Column() {
       SymbolGlyph(this.currentIndex === targetIndex ? selectedImg : normalImg)
-        .fontSize($r("app.float.title"))
+        .fontSize($r("app.float.Title"))
 
       /*Text(title)
         .fontColor(this.currentIndex === targetIndex ? '#1698CE' : '#6B6B6B')
@@ -109,7 +109,11 @@ struct Index {
         }
       }),
 
-    customStyle: true
+    customStyle: true,
+
+    onWillDismiss:(dismissDialogAction: DismissDialogAction)=> {
+      hilog.debug(Constants.DOMAIN, TAG, "disclaimer: User try to exit. Action: %{public}s", dismissDialogAction.reason.toString())
+    }
   });
 
   editTOTPItem: CustomDialogController = new CustomDialogController({
@@ -129,8 +133,8 @@ struct Index {
     customStyle: true,
 
     onWillDismiss:(dismissDialogAction: DismissDialogAction)=> {
-      hilog.debug(Constants.DOMAIN, TAG, "User try to exit. Action: %{public}s", dismissDialogAction.reason.toString())
-    },
+      hilog.debug(Constants.DOMAIN, TAG, "editTOTPItem: User try to exit. Action: %{public}s", dismissDialogAction.reason.toString())
+    }
   });
 
   // INTERNAL FUNCTION
@@ -195,14 +199,14 @@ struct Index {
             NoKeyInJSON();
           }
         }
-        .tabBar(this.tabBuilder($r('app.string.toolBarItem1'), 0, $r('sys.symbol.house_fill'), $r('sys.symbol.house')))
+        .tabBar(this.tabBuilder(0, $r('sys.symbol.house_fill'), $r('sys.symbol.house')))
         .backgroundColor($r('app.color.background'))
         .padding({ top: 18 })
 
         TabContent() {
           Settings();
         }
-        .tabBar(this.tabBuilder($r('app.string.toolBarItem2'), 1, $r('sys.symbol.gearshape_fill'), $r('sys.symbol.gearshape')))
+        .tabBar(this.tabBuilder(1, $r('sys.symbol.gearshape_fill'), $r('sys.symbol.gearshape')))
         .backgroundColor($r('app.color.background'))
       }
       .scrollable(false)

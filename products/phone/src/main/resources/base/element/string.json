@@ -17,76 +17,36 @@
       "value": "滴答"
     },
     {
-      "name": "menuContent_1",
-      "value": "设置"
+      "name": "Disclaimer_title",
+      "value": "欢迎您使用滴答软件"
     },
     {
-      "name": "menuContent_3",
-      "value": "请作者喝咖啡"
-    },
-    {
-      "name": "menuContent_2",
-      "value": "问题上报"
-    },
-    {
-      "name": "WarningTitle",
-      "value": "免责声明"
-    },
-    {
-      "name": "WarningContent_1",
+      "name": "Disclaimer_content1",
       "value": "1、本应用仅为工具类应用，旨在为用户提供便捷的服务。用户在使用本应用的过程中，所进行的任何行为、操作及其结果，均由用户本人负责。本应用开发者不对用户的使用行为及由此引发的任何直接或间接的法律责任承担责任。"
     },
     {
-      "name": "WarningContent_2",
-      "value": "2、用户应确保在使用本应用的过程中，遵守当地及相关国家或地区的法律法规。用户不得利用本应用从事任何违法、违规或不正当的行为。本应用开发者强烈建议用户在使用本应用时，保持合法合规，任何因用户违规使用本应用所导致的法律纠纷、责任或后果，均由用户自行承担。"
+      "name": "Disclaimer_content2",
+      "value": "2、我们充分尊重用户的隐私权，并按照法律法规和业界成熟的安全标准，保护您的数据安全。"
     },
     {
-      "name": "WarningContent_3",
-      "value": "3、本应用可能涉及第三方服务或内容，开发者无法对这些信息的准确性、可靠性、完整性进行保证。用户使用本应用时，应独立判断相关信息的真伪与有效性。开发者不承担因第三方内容或服务引发的任何损失或责任。"
+      "name": "Disclaimer_PrivacyPolicyStatement_url",
+      "value": "https://agreement-drcn.hispace.dbankcloud.cn/index.html?lang=zh&agreementId=1554645211815096704"
     },
     {
-      "name": "WarningContent_4",
-      "value": "4、本应用可能通过接口或其他方式访问第三方网站或应用程序，开发者对这些第三方平台的内容、隐私政策和用户协议概不负责。用户在访问第三方服务时，应遵守相关平台的使用条款，并自行承担相应的责任。"
+      "name": "Disclaimer_PrivacyPolicyStatement_title",
+      "value": "《关于滴答与隐私的声明》"
     },
     {
-      "name": "WarningContent_5",
-      "value": "5、本免责声明的内容可能会根据法律法规的更新或业务需求进行调整。开发者保留在不另行通知的情况下修改本免责声明的权利。用户在继续使用本应用时，即视为接受相关修改。"
+      "name": "Disclaimer_PrivacyPolicyStatement_explanation",
+      "value": "(以下简称为“本声明”)以便您了解我们如何收集、使用、保护、储存您的个人数据。请您仔细阅读本声明。如您有任何疑问，请告知我们"
     },
     {
-      "name": "WarningPageButton_1",
+      "name": "Disclaimer_confirm",
       "value": "同意并继续"
     },
     {
-      "name": "WarningPageButton_2",
+      "name": "Disclaimer_cancel",
       "value": "不同意"
-    },
-    {
-      "name": "toolBarItem1",
-      "value": "主页"
-    },
-    {
-      "name": "toolBarItem2",
-      "value": "设置"
-    },
-    {
-      "name": "questionmarkTitle",
-      "value": "用法："
-    },
-    {
-      "name": "questionmarkContent1",
-      "value": "content1"
-    },
-    {
-      "name": "reasonManageVPN",
-      "value": "reason"
-    },
-    {
-      "name": "proxyTitle",
-      "value": "代理"
-    },
-    {
-      "name": "settingsTitle",
-      "value": "设置"
     }
   ]
 }
