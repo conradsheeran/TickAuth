@@ -1,3 +1,5 @@
+import { Constants } from "../common/Constants";
+@Entry
 @Component
 export struct NoKeyInJSON {
   @State message: string = '请点击右上角添加一个验证码吧';
@@ -6,11 +8,11 @@ export struct NoKeyInJSON {
     Row() {
       Column() {
         Text(this.message)
-          .fontSize(50)
+          .fontSize($r('app.float.NoKeyInJSON_fontsize'))
           .fontWeight(FontWeight.Bold)
       }
-      .width('100%')
+      .width(Constants.HOMEPAGE_SIZE)
     }
-    .height('100%')
+    .height(Constants.HOMEPAGE_SIZE)
   }
 }

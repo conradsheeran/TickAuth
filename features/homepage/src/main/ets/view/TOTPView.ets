@@ -40,17 +40,19 @@ export struct TOTP {
 
   build() {
     Column() {
-      List({ space: 12 }) {
+      List({ space: Constants.TOTPVIEW_LIST_SPACE }) {
         ForEach(this.TOTPList, (item: SecretClass) => {
           ListItem() {
             TOTPItem({ totpItem: item })
           }
         }, (item: SecretClass) => item.alias)
       }
+      .width(Constants.TOTPVIEW_LIST_SIZE)
+      .height(Constants.TOTPVIEW_LIST_SIZE)
       .scrollBar(BarState.Off)
-      .padding({ left: 16, right: 16 })
+      .padding({ left: $r('app.float.TOTPView_List_padding'), right: $r('app.float.TOTPView_List_padding') })
     }
-    .margin({ top: 18 })
+    .margin({ top: $r('app.float.TOTPView_List_margin') })
   }
 }
 
@@ -71,33 +73,32 @@ struct TOTPItem {
     Row() {
       Column() {
         Text(this.totpItem.alias)
-          .height("50%")
-          .width('100%')
-          .fontSize(18)
+          .height(Constants.TOTPVIEW_LISTITEM_TOTP_HEIGHT)
+          .width(Constants.TOTPVIEW_LISTITEM_TOTP_WIDTH)
+          .fontSize($r('app.float.TOTPView_ListItem_Alias_fontsize'))
           .textAlign(TextAlign.Start)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
-          .maxLines(1)
+          .maxLines(Constants.TOTPVIEW_LISTITEM_MAXLINE)
 
         Text(this.totpItem.secret)
-          .height("50%")
-          .width('100%')
-          .fontSize(30)
-          .fontColor("#66A9C9")
+          .height(Constants.TOTPVIEW_LISTITEM_TOTP_HEIGHT)
+          .width(Constants.TOTPVIEW_LISTITEM_TOTP_WIDTH)
+          .fontSize($r('app.float.TOTPView_ListItem_Secret_fontsize'))
+          .fontColor($r('app.color.TOTPView_ListItem_fontcolor'))
           .textAlign(TextAlign.Start)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
-          .maxLines(1)
-          .margin({ bottom: 4 })
+          .maxLines(Constants.TOTPVIEW_LISTITEM_MAXLINE)
+          .margin({ bottom: $r('app.float.TOTPView_ListItem_Secret_margin') })
 
       }
-      .height('100%')
-      .layoutWeight(1)
-      .margin({ right: 12 })
+      .layoutWeight(Constants.TOTPVIEW_LISTITEM_LAYOUTWEIGHT)
+      .margin({ right: $r('app.float.TOTPView_ListItem_Text_margin') })
     }
-    .width('100%')
-    .height("13.5%")
-    .borderRadius(16)
+    .width(Constants.TOTPVIEW_LISTITEM_WIDTH)
+    .height(Constants.TOTPVIEW_LISTITEM_HEIGHT)
+    .borderRadius($r('app.float.BorderRadius'))
     .backgroundColor(Color.White)
-    .padding(12)
+    .padding($r('app.float.TOTPView_ListItem_padding'))
     .alignItems(VerticalAlign.Top)
   }
 }

@@ -215,7 +215,7 @@ struct Index {
       .width("100%")
       .height("100%")
       .margin({ top: "3%" })
-      .backgroundColor($r('app.color.toolBar'))
+      .backgroundColor($r('app.color.tabBar'))
       .onChange((index: number) => {
         this.currentIndex = index
       })

@@ -20,18 +20,12 @@ export struct CustomDialog_disclaimer {
       List() {
         ListItem() {
           Text($r('app.string.Disclaimer_content1'))
-            .fontSize($r('app.float.Disclaimer_content'))
-            .textAlign(TextAlign.Start)
-            .margin({top: Constants.DISCLAIMER_CONTENT_MARGIN})
-            .width(Constants.DISCLAIMER_WIDTH)
+            .ListItem_attribute()
         }
 
         ListItem() {
           Text($r('app.string.Disclaimer_content2'))
-            .fontSize($r('app.float.Disclaimer_content'))
-            .textAlign(TextAlign.Start)
-            .margin({top: Constants.DISCLAIMER_CONTENT_MARGIN})
-            .width(Constants.DISCLAIMER_WIDTH)
+            .ListItem_attribute()
         }
 
         ListItem() {
@@ -94,4 +88,12 @@ export struct CustomDialog_disclaimer {
     .borderRadius($r('app.float.BorderRadius'))
     .backgroundColor($r('app.color.background'))
   }
+}
+
+@Extend(Text)
+function ListItem_attribute() {
+  .fontSize($r('app.float.Disclaimer_content'))
+  .textAlign(TextAlign.Start)
+  .margin({ top: Constants.DISCLAIMER_CONTENT_MARGIN })
+  .width(Constants.DISCLAIMER_WIDTH)
 }

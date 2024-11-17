@@ -9,15 +9,11 @@
       "value": "#F8F4ED"
     },
     {
-      "name": "toggleBackground",
-      "value": "#66A9C9"
-    },
-    {
       "name": "titleBar",
       "value": "#93B5CF"
     },
     {
-      "name": "toolBar",
+      "name": "tabBar",
       "value": "#93B5CF"
     }
   ]

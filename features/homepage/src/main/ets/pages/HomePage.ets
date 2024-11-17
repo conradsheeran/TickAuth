@@ -1,3 +1,4 @@
+import { Constants } from "../common/Constants"
 import { TOTP } from "../view/TOTPView"
 
 @Component
@@ -7,8 +8,8 @@ export struct HomePage {
     Column() {
       TOTP()
     }
-    .height("100%")
-    .width("100%")
-    .padding({ top: 18 })
+    .height(Constants.HOMEPAGE_SIZE)
+    .width(Constants.HOMEPAGE_SIZE)
+    .padding({ top: $r('app.float.HomePage_padding') })
   }
 }
