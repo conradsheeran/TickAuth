@@ -3,7 +3,7 @@ import { buffer } from '@kit.ArkTS';
 import { SecretClass } from "../model/TOTPModel"
 import { BusinessError } from "@kit.BasicServicesKit";
 import { bufferToString, Logger } from "utils"
-import { GenerateTOTP } from "totp"
+import { GenerateTOTP, GetTOTPTimeInfo } from "totp"
 import { Constants } from "../common/Constants";
 import { hilog } from "@kit.PerformanceAnalysisKit";
 
@@ -58,15 +58,42 @@ export struct TOTP {
 
 @Component
 struct TOTPItem {
+  @State refresh: boolean = false;
   @Prop totpItem: SecretClass;
+  @State totpItemNext: SecretClass = this.totpItem;
 
   aboutToAppear(): void {
-    GenerateTOTP(this.totpItem.secret).then((result) => {
+    GenerateTOTP(this.totpItem.secret, 6, 30 , "SHA1", Math.floor(Date.now() / 1000)).then((result) => {
       this.totpItem.secret = result.code;
       hilog.info(Constants.DOMAIN, TAG, "GenerateTOTP(%{public}s) Succeed", this.totpItem.alias)
     }).catch((e: BusinessError) => {
       logger.error(Constants.DOMAIN, TAG, "GenerateTOTP fatal: %{public}s", String(e))
     })
+
+    try {
+      let timeInfo = GetTOTPTimeInfo()
+      let currentRemain = timeInfo.timeRemaining;
+
+      setInterval(async () => {
+        currentRemain -= 1;
+
+        console.debug(`${currentRemain}`)
+
+        if (currentRemain === 1) {
+          let totpNext = await GenerateTOTP(this.totpItem.secret, 6, 30 , "SHA1", Math.floor((Date.now() / 1000) + 2))
+          this.totpItemNext.secret = totpNext.code;
+        }
+
+        if (currentRemain === 0) {
+          currentRemain = timeInfo.timeStep;
+          this.refresh = true;
+        } else {
+          this.refresh = false;
+        }
+      }, 1000);
+    } catch (e) {
+      logger.error(Constants.DOMAIN, TAG, "Get the TOTP time parameter fatal: %{public}s", String(e));
+    }
   }
 
   build() {
@@ -80,16 +107,11 @@ struct TOTPItem {
           .textOverflow({ overflow: TextOverflow.Ellipsis })
           .maxLines(Constants.TOTPVIEW_LISTITEM_MAXLINE)
 
-        Text(this.totpItem.secret)
-          .height(Constants.TOTPVIEW_LISTITEM_TOTP_HEIGHT)
-          .width(Constants.TOTPVIEW_LISTITEM_TOTP_WIDTH)
-          .fontSize($r('app.float.TOTPView_ListItem_Secret_fontsize'))
-          .fontColor($r('app.color.TOTPView_ListItem_fontcolor'))
-          .textAlign(TextAlign.Start)
-          .textOverflow({ overflow: TextOverflow.Ellipsis })
-          .maxLines(Constants.TOTPVIEW_LISTITEM_MAXLINE)
-          .margin({ bottom: $r('app.float.TOTPView_ListItem_Secret_margin') })
-
+        if (!this.refresh) {
+          this.totpItemSecret()
+        } else {
+          this.totpItemSecretNext()
+        }
       }
       .layoutWeight(Constants.TOTPVIEW_LISTITEM_LAYOUTWEIGHT)
       .margin({ right: $r('app.float.TOTPView_ListItem_Text_margin') })
@@ -100,5 +122,31 @@ struct TOTPItem {
     .backgroundColor(Color.White)
     .padding($r('app.float.TOTPView_ListItem_padding'))
     .alignItems(VerticalAlign.Top)
+  }
+
+  @Builder
+  totpItemSecret() {
+    Text(this.totpItem.secret)
+      .height(Constants.TOTPVIEW_LISTITEM_TOTP_HEIGHT)
+      .width(Constants.TOTPVIEW_LISTITEM_TOTP_WIDTH)
+      .fontSize($r('app.float.TOTPView_ListItem_Secret_fontsize'))
+      .fontColor($r('app.color.TOTPView_ListItem_fontcolor'))
+      .textAlign(TextAlign.Start)
+      .textOverflow({ overflow: TextOverflow.Ellipsis })
+      .maxLines(Constants.TOTPVIEW_LISTITEM_MAXLINE)
+      .margin({ bottom: $r('app.float.TOTPView_ListItem_Secret_margin') })
+  }
+
+  @Builder
+  totpItemSecretNext() {
+    Text(this.totpItemNext.secret)
+      .height(Constants.TOTPVIEW_LISTITEM_TOTP_HEIGHT)
+      .width(Constants.TOTPVIEW_LISTITEM_TOTP_WIDTH)
+      .fontSize($r('app.float.TOTPView_ListItem_Secret_fontsize'))
+      .fontColor($r('app.color.TOTPView_ListItem_fontcolor'))
+      .textAlign(TextAlign.Start)
+      .textOverflow({ overflow: TextOverflow.Ellipsis })
+      .maxLines(Constants.TOTPVIEW_LISTITEM_MAXLINE)
+      .margin({ bottom: $r('app.float.TOTPView_ListItem_Secret_margin') })
   }
 }

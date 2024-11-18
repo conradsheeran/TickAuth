@@ -7,7 +7,6 @@ import { HomePage, NoKeyInJSON } from "homepage"
 import { Settings } from "settings"
 import { CatchSecretByScan } from "../model/CatchSecretByScan"
 import { SecretParams, WriteToJson, Logger } from "utils"
-import { GetTOTPTimeInfo } from "totp"
 import { CustomDialog_editTOTPItem } from '../uicomponent/EditTOTPItem';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { Constants } from '../common/Constants';
@@ -20,7 +19,6 @@ const logger = new Logger(getContext(this))
 struct Index {
   @State currentIndex: number = 0;
   @State hasKey: boolean = true;
-  @State refresh: boolean = false;
   @State CustomDialog_editTOTPItemIsClosed: boolean = false;
   @State alias: string = "default";
 
@@ -69,7 +67,6 @@ struct Index {
         hilog.debug(Constants.DOMAIN, TAG, "WriteToJson completed", this.secret.issuer)
 
         this.hasKey = true;
-        this.refresh = true;
         this.CustomDialog_editTOTPItemIsClosed = false
         logger.info(Constants.DOMAIN, TAG, "The SECRET has been added", this.secret.issuer)
       } catch (e) {
@@ -162,25 +159,6 @@ struct Index {
     } catch (e) {
       logger.error(Constants.DOMAIN, TAG, "Detect whether to add a key fatal: %{public}s", String(e));
     }
-
-    // Get the TOTP time parameter at the current time
-    try {
-      let timeInfo = GetTOTPTimeInfo()
-      let currentRemain = timeInfo.timeRemaining;
-
-      setInterval(() => {
-        currentRemain -= 1;
-
-        if (currentRemain === 0) {
-          currentRemain = timeInfo.timeStep;
-          this.refresh = true;
-        } else {
-          this.refresh = false;
-        }
-      }, 1000);
-    } catch (e) {
-      logger.error(Constants.DOMAIN, TAG, "Get the TOTP time parameter fatal: %{public}s", String(e));
-    }
   }
 
   pageStack: NavPathStack = new NavPathStack();
@@ -190,11 +168,7 @@ struct Index {
       Tabs({ barPosition: BarPosition.End, index: this.currentIndex, controller: this.tabsController }) {
         TabContent() {
           if (this.hasKey) {
-            if (this.refresh) {
-              HomePage()
-            } else {
-              HomePage()
-            }
+            HomePage()
           } else {
             NoKeyInJSON();
           }
