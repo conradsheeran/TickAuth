@@ -38,10 +38,6 @@ git clone https://github.com/conradsheeran/TickAuth.git
 - [ ] 支持添加 Steam 令牌
 - [ ] 增加对平板、可穿戴设备的支持
 
-## 目前已知的问题：
-
-1. 验证码自动刷新时可能会出现轻微 UI 闪烁，后续版本将进行优化
-
 ## 屏幕截图：
 
 |                                         |                                   |
