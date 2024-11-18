@@ -60,10 +60,9 @@ export struct TOTP {
 struct TOTPItem {
   @State refresh: boolean = false;
   @Prop totpItem: SecretClass;
-  @State totpItemNext: SecretClass = this.totpItem;
 
   aboutToAppear(): void {
-    GenerateTOTP(this.totpItem.secret, 6, 30 , "SHA1", Math.floor(Date.now() / 1000)).then((result) => {
+    GenerateTOTP(this.totpItem.secret).then((result) => {
       this.totpItem.secret = result.code;
       hilog.info(Constants.DOMAIN, TAG, "GenerateTOTP(%{public}s) Succeed", this.totpItem.alias)
     }).catch((e: BusinessError) => {
@@ -77,15 +76,16 @@ struct TOTPItem {
       setInterval(async () => {
         currentRemain -= 1;
 
-        console.debug(`${currentRemain}`)
-
-        if (currentRemain === 1) {
-          let totpNext = await GenerateTOTP(this.totpItem.secret, 6, 30 , "SHA1", Math.floor((Date.now() / 1000) + 2))
-          this.totpItemNext.secret = totpNext.code;
-        }
-
         if (currentRemain === 0) {
           currentRemain = timeInfo.timeStep;
+
+          GenerateTOTP(this.totpItem.secret).then((result) => {
+            this.totpItem.secret = result.code;
+            hilog.info(Constants.DOMAIN, TAG, "GenerateTOTP(%{public}s) Succeed", this.totpItem.alias)
+          }).catch((e: BusinessError) => {
+            logger.error(Constants.DOMAIN, TAG, "GenerateTOTP fatal: %{public}s", String(e))
+          })
+
           this.refresh = true;
         } else {
           this.refresh = false;
@@ -110,7 +110,7 @@ struct TOTPItem {
         if (!this.refresh) {
           this.totpItemSecret()
         } else {
-          this.totpItemSecretNext()
+          this.totpItemSecret()
         }
       }
       .layoutWeight(Constants.TOTPVIEW_LISTITEM_LAYOUTWEIGHT)
@@ -135,18 +135,6 @@ struct TOTPItem {
       .textOverflow({ overflow: TextOverflow.Ellipsis })
       .maxLines(Constants.TOTPVIEW_LISTITEM_MAXLINE)
       .margin({ bottom: $r('app.float.TOTPView_ListItem_Secret_margin') })
-  }
-
-  @Builder
-  totpItemSecretNext() {
-    Text(this.totpItemNext.secret)
-      .height(Constants.TOTPVIEW_LISTITEM_TOTP_HEIGHT)
-      .width(Constants.TOTPVIEW_LISTITEM_TOTP_WIDTH)
-      .fontSize($r('app.float.TOTPView_ListItem_Secret_fontsize'))
-      .fontColor($r('app.color.TOTPView_ListItem_fontcolor'))
-      .textAlign(TextAlign.Start)
-      .textOverflow({ overflow: TextOverflow.Ellipsis })
-      .maxLines(Constants.TOTPVIEW_LISTITEM_MAXLINE)
-      .margin({ bottom: $r('app.float.TOTPView_ListItem_Secret_margin') })
+      .transition(TransitionEffect.OPACITY.animation({ duration: 300 }))
   }
 }
