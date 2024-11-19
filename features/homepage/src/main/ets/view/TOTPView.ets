@@ -62,7 +62,7 @@ export struct TOTP {
       }
       .width(Constants.TOTPVIEW_LIST_SIZE)
       .height(Constants.TOTPVIEW_LIST_SIZE)
-      .scrollBar(BarState.Off)
+      .scrollBar(BarState.Auto)
       .padding({ left: $r('app.float.TOTPView_List_padding'), right: $r('app.float.TOTPView_List_padding') })
     }
     .margin({ top: $r('app.float.TOTPView_List_margin') })
