@@ -47,6 +47,10 @@
     {
       "name": "Disclaimer_cancel",
       "value": "不同意"
+    },
+    {
+      "name": "UserAuth_title",
+      "value": "请进行身份认证"
     }
   ]
 }

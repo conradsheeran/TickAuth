@@ -64,7 +64,6 @@ struct SettingsItem {
           .maxLines(Constants.SETTINGSITEMVIEW_LISTITEM_MAXLINE)
           .padding({ top: $r('app.float.SettingsItemView_ListItem_Title_margin') })
 
-
         Blank()
 
         Text(this.settingsItem.content)
