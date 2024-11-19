@@ -20,4 +20,6 @@ export class Constants {
   static readonly TOTPVIEW_LISTITEM_WIDTH: string = "100%";
 
   static readonly TOTPVIEW_LISTITEM_HEIGHT: string = "13.5%";
+
+  static readonly NOKEYINJSON_IMAGE_MARGIN: string = "7%";
 }
