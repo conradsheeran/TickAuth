@@ -13,6 +13,7 @@ const logger = new Logger(getContext(this))
 @Component
 export struct TOTP {
   @State TOTPList: Array<SecretClass> = [];
+  @Link @Watch("Refresh") refresh: boolean;
 
   aboutToAppear(): void {
     try {
@@ -20,6 +21,18 @@ export struct TOTP {
     } catch (e) {
       logger.error(Constants.DOMAIN, TAG, "GetSecretFromJson fatal: %{public}s", String(e))
     }
+
+    this.refresh = false;
+  }
+
+  Refresh() {
+    try {
+      this.GetSecretFromJson();
+    } catch (e) {
+      logger.error(Constants.DOMAIN, TAG, "GetSecretFromJson fatal: %{public}s", String(e))
+    }
+
+    this.refresh = false;
   }
 
   async GetSecretFromJson() {

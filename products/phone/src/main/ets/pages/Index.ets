@@ -19,6 +19,7 @@ const logger = new Logger(getContext(this))
 struct Index {
   @State currentIndex: number = 0;
   @State hasKey: boolean = true;
+  @State refresh: boolean = false;
   @State CustomDialog_editTOTPItemIsClosed: boolean = false;
   @State alias: string = "default";
 
@@ -67,8 +68,9 @@ struct Index {
         hilog.debug(Constants.DOMAIN, TAG, "WriteToJson completed", this.secret.issuer)
 
         this.hasKey = true;
+        this.refresh = true;
         this.CustomDialog_editTOTPItemIsClosed = false
-        logger.info(Constants.DOMAIN, TAG, "The SECRET has been added", this.secret.issuer)
+        logger.info(Constants.DOMAIN, TAG, "The SECRET(%{public}s) has been added", this.secret.issuer)
       } catch (e) {
         logger.error(Constants.DOMAIN, TAG, "ADD button: %{public}s", String(e));
       }
@@ -155,7 +157,9 @@ struct Index {
     // Detect whether to add a key
     try {
       this.hasKey = await fs.access(this.secretFileDir);
-      hilog.debug(Constants.DOMAIN, TAG, "No Keys in the JSON")
+      if (!this.hasKey) {
+        hilog.debug(Constants.DOMAIN, TAG, "No Keys in the JSON")
+      }
     } catch (e) {
       logger.error(Constants.DOMAIN, TAG, "Detect whether to add a key fatal: %{public}s", String(e));
     }
@@ -168,9 +172,9 @@ struct Index {
       Tabs({ barPosition: BarPosition.End, index: this.currentIndex, controller: this.tabsController }) {
         TabContent() {
           if (this.hasKey) {
-            HomePage()
+            HomePage({ refresh: this.refresh })
           } else {
-            NoKeyInJSON();
+            NoKeyInJSON({ hasKey: this.hasKey });
           }
         }
         .tabBar(this.tabBuilder(0, $r('sys.symbol.house_fill'), $r('sys.symbol.house')))
