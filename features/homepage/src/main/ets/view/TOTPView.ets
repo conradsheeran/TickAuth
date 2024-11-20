@@ -13,6 +13,7 @@ const logger = new Logger(getContext(this))
 @Component
 export struct TOTP {
   @State TOTPList: Array<SecretClass> = [];
+  @Link @Watch("Refresh") refresh: boolean;
 
   aboutToAppear(): void {
     try {
@@ -20,6 +21,18 @@ export struct TOTP {
     } catch (e) {
       logger.error(Constants.DOMAIN, TAG, "GetSecretFromJson fatal: %{public}s", String(e))
     }
+
+    this.refresh = false;
+  }
+
+  Refresh() {
+    try {
+      this.GetSecretFromJson();
+    } catch (e) {
+      logger.error(Constants.DOMAIN, TAG, "GetSecretFromJson fatal: %{public}s", String(e))
+    }
+
+    this.refresh = false;
   }
 
   async GetSecretFromJson() {
@@ -49,7 +62,7 @@ export struct TOTP {
       }
       .width(Constants.TOTPVIEW_LIST_SIZE)
       .height(Constants.TOTPVIEW_LIST_SIZE)
-      .scrollBar(BarState.Off)
+      .scrollBar(BarState.Auto)
       .padding({ left: $r('app.float.TOTPView_List_padding'), right: $r('app.float.TOTPView_List_padding') })
     }
     .margin({ top: $r('app.float.TOTPView_List_margin') })
@@ -60,10 +73,9 @@ export struct TOTP {
 struct TOTPItem {
   @State refresh: boolean = false;
   @Prop totpItem: SecretClass;
-  @State totpItemNext: SecretClass = this.totpItem;
 
   aboutToAppear(): void {
-    GenerateTOTP(this.totpItem.secret, 6, 30 , "SHA1", Math.floor(Date.now() / 1000)).then((result) => {
+    GenerateTOTP(this.totpItem.secret).then((result) => {
       this.totpItem.secret = result.code;
       hilog.info(Constants.DOMAIN, TAG, "GenerateTOTP(%{public}s) Succeed", this.totpItem.alias)
     }).catch((e: BusinessError) => {
@@ -77,15 +89,16 @@ struct TOTPItem {
       setInterval(async () => {
         currentRemain -= 1;
 
-        console.debug(`${currentRemain}`)
-
-        if (currentRemain === 1) {
-          let totpNext = await GenerateTOTP(this.totpItem.secret, 6, 30 , "SHA1", Math.floor((Date.now() / 1000) + 2))
-          this.totpItemNext.secret = totpNext.code;
-        }
-
         if (currentRemain === 0) {
           currentRemain = timeInfo.timeStep;
+
+          GenerateTOTP(this.totpItem.secret).then((result) => {
+            this.totpItem.secret = result.code;
+            hilog.info(Constants.DOMAIN, TAG, "GenerateTOTP(%{public}s) Succeed", this.totpItem.alias)
+          }).catch((e: BusinessError) => {
+            logger.error(Constants.DOMAIN, TAG, "GenerateTOTP fatal: %{public}s", String(e))
+          })
+
           this.refresh = true;
         } else {
           this.refresh = false;
@@ -106,11 +119,12 @@ struct TOTPItem {
           .textAlign(TextAlign.Start)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
           .maxLines(Constants.TOTPVIEW_LISTITEM_MAXLINE)
+          .transition(TransitionEffect.OPACITY.animation({ duration: 300 }))
 
         if (!this.refresh) {
           this.totpItemSecret()
         } else {
-          this.totpItemSecretNext()
+          this.totpItemSecret()
         }
       }
       .layoutWeight(Constants.TOTPVIEW_LISTITEM_LAYOUTWEIGHT)
@@ -135,18 +149,6 @@ struct TOTPItem {
       .textOverflow({ overflow: TextOverflow.Ellipsis })
       .maxLines(Constants.TOTPVIEW_LISTITEM_MAXLINE)
       .margin({ bottom: $r('app.float.TOTPView_ListItem_Secret_margin') })
-  }
-
-  @Builder
-  totpItemSecretNext() {
-    Text(this.totpItemNext.secret)
-      .height(Constants.TOTPVIEW_LISTITEM_TOTP_HEIGHT)
-      .width(Constants.TOTPVIEW_LISTITEM_TOTP_WIDTH)
-      .fontSize($r('app.float.TOTPView_ListItem_Secret_fontsize'))
-      .fontColor($r('app.color.TOTPView_ListItem_fontcolor'))
-      .textAlign(TextAlign.Start)
-      .textOverflow({ overflow: TextOverflow.Ellipsis })
-      .maxLines(Constants.TOTPVIEW_LISTITEM_MAXLINE)
-      .margin({ bottom: $r('app.float.TOTPView_ListItem_Secret_margin') })
+      .transition(TransitionEffect.OPACITY.animation({ duration: 300 }))
   }
 }

@@ -1,0 +1,60 @@
+{
+  "float": [
+    {
+      "name": "SettingsItemView_List_padding",
+      "value": "16.0"
+    },
+    {
+      "name": "SettingsItemView_List_margin",
+      "value": "18.0"
+    },
+    {
+      "name": "SettingsItemView_ListItem_Title_fontsize",
+      "value": "18.0"
+    },
+    {
+      "name": "SettingsItemView_ListItem_Content_fontsize",
+      "value": "12.0"
+    },
+    {
+      "name": "SettingsItemView_ListItem_Title_margin",
+      "value": "4.0"
+    },
+    {
+      "name": "SettingsItemView_ListItem_Content_margin",
+      "value": "4.0"
+    },
+    {
+      "name": "SettingsItemView_ListItem_Text_left_margin",
+      "value": "12.0"
+    },
+    {
+      "name": "SettingsItemView_ListItem_Text_top_margin",
+      "value": "2.0"
+    },
+    {
+      "name": "BorderRadius",
+      "value": "16.0"
+    },
+    {
+      "name": "SettingsItemView_ListItem_padding",
+      "value": "12.0"
+    },
+    {
+      "name": "SettingsItemView_ListItem_Toggle_height",
+      "value": "30.0"
+    },
+    {
+      "name": "SettingsItemView_ListItem_Toggle_width",
+      "value": "54.0"
+    },
+    {
+      "name": "SettingsItemView_ListItem_Toggle_margin",
+      "value": "28.0"
+    },
+    {
+      "name": "SettingsItemView_ListItem_Symbol_size",
+      "value": "32.0"
+    }
+  ]
+}

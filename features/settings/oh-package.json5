@@ -5,5 +5,7 @@
   "main": "Index.ets",
   "author": "Yang He",
   "license": "GPL-3.0",
-  "dependencies": {}
+  "dependencies": {
+    "utils": "file:../../common/utils"
+  }
 }

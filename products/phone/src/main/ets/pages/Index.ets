@@ -10,6 +10,8 @@ import { SecretParams, WriteToJson, Logger } from "utils"
 import { CustomDialog_editTOTPItem } from '../uicomponent/EditTOTPItem';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { Constants } from '../common/Constants';
+import { UserAuth } from '../model/UserAuth';
+import { UserAuthView } from '../view/UserAuth';
 
 const TAG: string = "Index"
 const logger = new Logger(getContext(this))
@@ -17,8 +19,10 @@ const logger = new Logger(getContext(this))
 @Entry
 @Component
 struct Index {
+  @StorageLink("login") login: boolean = false;
   @State currentIndex: number = 0;
   @State hasKey: boolean = true;
+  @State refresh: boolean = false;
   @State CustomDialog_editTOTPItemIsClosed: boolean = false;
   @State alias: string = "default";
 
@@ -67,8 +71,9 @@ struct Index {
         hilog.debug(Constants.DOMAIN, TAG, "WriteToJson completed", this.secret.issuer)
 
         this.hasKey = true;
+        this.refresh = true;
         this.CustomDialog_editTOTPItemIsClosed = false
-        logger.info(Constants.DOMAIN, TAG, "The SECRET has been added", this.secret.issuer)
+        logger.info(Constants.DOMAIN, TAG, "The SECRET(%{public}s) has been added", this.secret.issuer)
       } catch (e) {
         logger.error(Constants.DOMAIN, TAG, "ADD button: %{public}s", String(e));
       }
@@ -100,7 +105,7 @@ struct Index {
         confirm: () => {
           let preferences: Promise<preferences.Preferences> = this.getPreferences(this, "Preferences");
           preferences.then((result: preferences.Preferences) => {
-            result.put("disclaimerIsConfirm", false);
+            result.put("disclaimerIsConfirm", true);
             result.flush();
           });
         }
@@ -143,11 +148,27 @@ struct Index {
   async onPageShow(): Promise<void> {
     // Detect whether the user agrees to the disclaimer
     this.getPreferences(this, "Preferences").then((preferences: preferences.Preferences) => {
-      preferences.get("disclaimerIsConfirm", true).then((value: preferences.ValueType) => {
+      preferences.get("disclaimerIsConfirm", false).then((value: preferences.ValueType) => {
         hilog.debug(Constants.DOMAIN, TAG, "The disclaimerIsConfirm is: %{public}s", value.toString())
 
-        if (value) {
+        if (!value) {
           this.disclaimer.open();
+        }
+      });
+    });
+
+    this.getPreferences(this, "Preferences").then((preferences: preferences.Preferences) => {
+      preferences.get(Constants.SETTINGS_USERAUTH, false).then((value: preferences.ValueType) => {
+        hilog.debug(Constants.DOMAIN, TAG, "The UserAuth is: %{public}s", value.toString())
+
+        if (value) {
+          UserAuth().then((result) => {
+            if (result === 12500000) {
+              this.login = true
+            }
+          })
+        } else {
+          this.login = true
         }
       });
     });
@@ -155,7 +176,9 @@ struct Index {
     // Detect whether to add a key
     try {
       this.hasKey = await fs.access(this.secretFileDir);
-      hilog.debug(Constants.DOMAIN, TAG, "No Keys in the JSON")
+      if (!this.hasKey) {
+        hilog.debug(Constants.DOMAIN, TAG, "No Keys in the JSON")
+      }
     } catch (e) {
       logger.error(Constants.DOMAIN, TAG, "Detect whether to add a key fatal: %{public}s", String(e));
     }
@@ -164,24 +187,33 @@ struct Index {
   pageStack: NavPathStack = new NavPathStack();
 
   build() {
+    if (this.login) {
+      this.Index()
+    } else {
+      UserAuthView()
+    }
+  }
+
+  @Builder
+  Index() {
     Navigation(this.pageStack) {
       Tabs({ barPosition: BarPosition.End, index: this.currentIndex, controller: this.tabsController }) {
         TabContent() {
           if (this.hasKey) {
-            HomePage()
+            HomePage({ refresh: this.refresh });
           } else {
-            NoKeyInJSON();
+            NoKeyInJSON({ hasKey: this.hasKey });
           }
         }
         .tabBar(this.tabBuilder(0, $r('sys.symbol.house_fill'), $r('sys.symbol.house')))
         .backgroundColor($r('app.color.background'))
-        .padding({ top: 18 })
+        .padding({ top: 18 });
 
         TabContent() {
           Settings();
         }
         .tabBar(this.tabBuilder(1, $r('sys.symbol.gearshape_fill'), $r('sys.symbol.gearshape')))
-        .backgroundColor($r('app.color.background'))
+        .backgroundColor($r('app.color.background'));
       }
       .scrollable(false)
       .vertical(false)
@@ -191,8 +223,8 @@ struct Index {
       .margin({ top: "3%" })
       .backgroundColor($r('app.color.tabBar'))
       .onChange((index: number) => {
-        this.currentIndex = index
-      })
+        this.currentIndex = index;
+      });
     }
     .mode(NavigationMode.Auto)
     .title($r('app.string.Title'),

@@ -2,7 +2,7 @@
   "color": [
     {
       "name": "start_window_background",
-      "value": "#FFFFFF"
+      "value": "#F8F4ED"
     },
     {
       "name": "background",
@@ -15,6 +15,10 @@
     {
       "name": "tabBar",
       "value": "#93B5CF"
+    },
+    {
+      "name": "UserAuthView_button",
+      "value": "#4e7ca1"
     }
   ]
 }

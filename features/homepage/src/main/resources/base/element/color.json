@@ -3,6 +3,10 @@
     {
       "name": "TOTPView_ListItem_fontcolor",
       "value": "#66A9C9"
+    },
+    {
+      "name": "NoKeyInJSON_fontcolor",
+      "value": "#46484e"
     }
   ]
 }

@@ -47,6 +47,14 @@
     {
       "name": "Disclaimer_cancel",
       "value": "Disagree"
+    },
+    {
+      "name": "UserAuth_title",
+      "value": "Please complete identity verification"
+    },
+    {
+      "name": "UserAuthView_button",
+      "value": "Authenticate to enter."
     }
   ]
 }
