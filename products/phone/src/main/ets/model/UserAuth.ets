@@ -17,7 +17,7 @@ export function UserAuth(): Promise<number> {
           userAuth.UserAuthType.FACE,
           userAuth.UserAuthType.FINGERPRINT,
         ],
-        authTrustLevel: userAuth.AuthTrustLevel.ATL3,
+        authTrustLevel: userAuth.AuthTrustLevel.ATL2,
       };
       const widgetParam: userAuth.WidgetParam = {
         title: String($r('app.string.UserAuth_title')),

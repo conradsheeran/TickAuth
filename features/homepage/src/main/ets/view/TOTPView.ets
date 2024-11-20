@@ -2,7 +2,7 @@ import { fileIo as fs } from "@kit.CoreFileKit"
 import { buffer } from '@kit.ArkTS';
 import { SecretClass } from "../model/TOTPModel"
 import { BusinessError } from "@kit.BasicServicesKit";
-import { bufferToString, Logger } from "utils"
+import { bufferToString, Logger, RemoveFromJson } from "utils"
 import { GenerateTOTP, GetTOTPTimeInfo } from "totp"
 import { Constants } from "../common/Constants";
 import { hilog } from "@kit.PerformanceAnalysisKit";
@@ -12,6 +12,7 @@ const logger = new Logger(getContext(this))
 
 @Component
 export struct TOTP {
+  @StorageLink("hasKey") hasKey: boolean = false;
   @State TOTPList: Array<SecretClass> = [];
   @Link @Watch("Refresh") refresh: boolean;
 
@@ -58,6 +59,12 @@ export struct TOTP {
           ListItem() {
             TOTPItem({ totpItem: item })
           }
+          .transition(TransitionEffect.OPACITY.animation({ duration: 300 }))
+          .swipeAction({
+            end: {
+              builder: () => { this.itemEnd(this.TOTPList.indexOf(item), item.alias) },
+            }
+          })
         }, (item: SecretClass) => item.alias)
       }
       .width(Constants.TOTPVIEW_LIST_SIZE)
@@ -66,6 +73,27 @@ export struct TOTP {
       .padding({ left: $r('app.float.TOTPView_List_padding'), right: $r('app.float.TOTPView_List_padding') })
     }
     .margin({ top: $r('app.float.TOTPView_List_margin') })
+  }
+
+  @Builder
+  itemEnd(index: number, alias: string) {
+    Button({ type: ButtonType.Circle }) {
+      SymbolGlyph($r('sys.symbol.trash'))
+        .fontSize($r('app.float.TOTPView_ListItem_DeleteButton_Symbol_size'))
+        .fontColor([Color.White])
+    }
+    .backgroundColor($r('app.color.TOTPView_ListItem_deleteButton'))
+    .width($r('app.float.TOTPView_ListItem_DeleteButton_size'))
+    .height($r('app.float.TOTPView_ListItem_DeleteButton_size'))
+    .margin({ left: $r('app.float.TOTPView_ListItem_DeleteButton_margin') })
+    .onClick(async () => {
+      this.TOTPList.splice(index, 1);
+      RemoveFromJson(getContext(this).filesDir + Constants.SECRET_FILE_DIR, alias).then((isNull: boolean) => {
+        if (!isNull) {
+          this.hasKey = isNull;
+        }
+      })
+    })
   }
 }
 

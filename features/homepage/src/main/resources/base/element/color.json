@@ -7,6 +7,10 @@
     {
       "name": "NoKeyInJSON_fontcolor",
       "value": "#46484e"
+    },
+    {
+      "name": "TOTPView_ListItem_deleteButton",
+      "value": "#ffe84026"
     }
   ]
 }
