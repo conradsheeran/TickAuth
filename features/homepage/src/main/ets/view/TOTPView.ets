@@ -2,7 +2,7 @@ import { fileIo as fs } from "@kit.CoreFileKit"
 import { buffer } from '@kit.ArkTS';
 import { SecretClass } from "../model/TOTPModel"
 import { BusinessError } from "@kit.BasicServicesKit";
-import { bufferToString, Logger } from "utils"
+import { bufferToString, Logger, RemoveFromJson } from "utils"
 import { GenerateTOTP, GetTOTPTimeInfo } from "totp"
 import { Constants } from "../common/Constants";
 import { hilog } from "@kit.PerformanceAnalysisKit";
@@ -12,6 +12,7 @@ const logger = new Logger(getContext(this))
 
 @Component
 export struct TOTP {
+  @StorageLink("hasKey") hasKey: boolean = false;
   @State TOTPList: Array<SecretClass> = [];
   @Link @Watch("Refresh") refresh: boolean;
 
@@ -58,6 +59,12 @@ export struct TOTP {
           ListItem() {
             TOTPItem({ totpItem: item })
           }
+          .transition(TransitionEffect.OPACITY.animation({ duration: 300 }))
+          .swipeAction({
+            end: {
+              builder: () => { this.itemEnd(this.TOTPList.indexOf(item), item.alias) },
+            }
+          })
         }, (item: SecretClass) => item.alias)
       }
       .width(Constants.TOTPVIEW_LIST_SIZE)
@@ -67,12 +74,35 @@ export struct TOTP {
     }
     .margin({ top: $r('app.float.TOTPView_List_margin') })
   }
+
+  @Builder
+  itemEnd(index: number, alias: string) {
+    Button({ type: ButtonType.Circle }) {
+      SymbolGlyph($r('sys.symbol.trash'))
+        .fontSize($r('app.float.TOTPView_ListItem_DeleteButton_Symbol_size'))
+        .fontColor([Color.White])
+    }
+    .backgroundColor($r('app.color.TOTPView_ListItem_deleteButton'))
+    .width($r('app.float.TOTPView_ListItem_DeleteButton_size'))
+    .height($r('app.float.TOTPView_ListItem_DeleteButton_size'))
+    .margin({ left: $r('app.float.TOTPView_ListItem_DeleteButton_margin') })
+    .onClick(async () => {
+      this.TOTPList.splice(index, 1);
+      RemoveFromJson(getContext(this).filesDir + Constants.SECRET_FILE_DIR, alias).then((isNull: boolean) => {
+        if (!isNull) {
+          this.hasKey = isNull;
+        }
+      })
+    })
+  }
 }
 
 @Component
 struct TOTPItem {
   @State refresh: boolean = false;
   @Prop totpItem: SecretClass;
+  @State totalTime: number = 30;
+  @State timeRemain: number = 1;
 
   aboutToAppear(): void {
     GenerateTOTP(this.totpItem.secret).then((result) => {
@@ -83,15 +113,12 @@ struct TOTPItem {
     })
 
     try {
-      let timeInfo = GetTOTPTimeInfo()
-      let currentRemain = timeInfo.timeRemaining;
-
+      let currentRemain = GetTOTPTimeInfo();
       setInterval(async () => {
         currentRemain -= 1;
 
         if (currentRemain === 0) {
-          currentRemain = timeInfo.timeStep;
-
+          currentRemain = 30;
           GenerateTOTP(this.totpItem.secret).then((result) => {
             this.totpItem.secret = result.code;
             hilog.info(Constants.DOMAIN, TAG, "GenerateTOTP(%{public}s) Succeed", this.totpItem.alias)
@@ -103,11 +130,16 @@ struct TOTPItem {
         } else {
           this.refresh = false;
         }
-      }, 1000);
+
+        this.timeRemain = currentRemain
+      }, 1000)
     } catch (e) {
       logger.error(Constants.DOMAIN, TAG, "Get the TOTP time parameter fatal: %{public}s", String(e));
     }
   }
+
+  private gradientColor: LinearGradient = new LinearGradient([{ color: $r('app.color.TOTPView_ListItem_Progress_end'), offset: 0.2 },
+                                                              { color: $r('app.color.TOTPView_ListItem_Progress_start'), offset: 1.0 }])
 
   build() {
     Row() {
@@ -127,8 +159,13 @@ struct TOTPItem {
           this.totpItemSecret()
         }
       }
-      .layoutWeight(Constants.TOTPVIEW_LISTITEM_LAYOUTWEIGHT)
       .margin({ right: $r('app.float.TOTPView_ListItem_Text_margin') })
+
+      Blank()
+
+      Progress({ value: this.timeRemain, total: this.totalTime, type: ProgressType.Ring })
+        .color(this.gradientColor)
+        .style({ strokeWidth: $r('app.float.TOTPView_ListItem_Progress_strokeWidth'), shadow: true, enableScanEffect: true })
     }
     .width(Constants.TOTPVIEW_LISTITEM_WIDTH)
     .height(Constants.TOTPVIEW_LISTITEM_HEIGHT)

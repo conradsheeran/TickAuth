@@ -6,7 +6,7 @@ import { CustomDialog_disclaimer } from '../uicomponent/Disclaimer'
 import { HomePage, NoKeyInJSON } from "homepage"
 import { Settings } from "settings"
 import { CatchSecretByScan } from "../model/CatchSecretByScan"
-import { SecretParams, WriteToJson, Logger } from "utils"
+import { SecretParams, WriteToJson, Logger, HasSecret } from "utils"
 import { CustomDialog_editTOTPItem } from '../uicomponent/EditTOTPItem';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { Constants } from '../common/Constants';
@@ -21,7 +21,7 @@ const logger = new Logger(getContext(this))
 struct Index {
   @StorageLink("login") login: boolean = false;
   @State currentIndex: number = 0;
-  @State hasKey: boolean = true;
+  @StorageLink("hasKey") hasKey: boolean = false;
   @State refresh: boolean = false;
   @State CustomDialog_editTOTPItemIsClosed: boolean = false;
   @State alias: string = "default";
@@ -175,10 +175,7 @@ struct Index {
 
     // Detect whether to add a key
     try {
-      this.hasKey = await fs.access(this.secretFileDir);
-      if (!this.hasKey) {
-        hilog.debug(Constants.DOMAIN, TAG, "No Keys in the JSON")
-      }
+      this.hasKey = await HasSecret(this.secretFileDir);
     } catch (e) {
       logger.error(Constants.DOMAIN, TAG, "Detect whether to add a key fatal: %{public}s", String(e));
     }

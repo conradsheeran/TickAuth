@@ -47,10 +47,11 @@ export async function WriteToJson(filePath: string, newItem: SecretItem): Promis
   }
 }
 
-// Not yet tested
-export async function RemoveFromJson(filePath: string, name: string): Promise<void> {
-  fs.access(filePath).then(async (res: boolean) => {
-    if (res) {
+export async function RemoveFromJson(filePath: string, name: string): Promise<boolean> {
+  try {
+    const fileExists = await fs.access(filePath);
+
+    if (fileExists) {
       const fileContent = await fs.readText(filePath);
       let dataArray: SecretItem[] = [];
 
@@ -61,9 +62,41 @@ export async function RemoveFromJson(filePath: string, name: string): Promise<vo
 
         const fd = (await fs.open(filePath, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE | fs.OpenMode.TRUNC)).fd;
         await fs.write(fd, JSON.stringify(dataArray, null, 2));
+
+        return dataArray.length > 0;
+      } else {
+        return false;
       }
     } else {
-      hilog.info(Constants.DOMAIN, TAG, "RemoveFromJson: The file does not exist")
+      hilog.info(Constants.DOMAIN, TAG, "RemoveFromJson: The file does not exist");
+      return false;
     }
-  })
+  } catch (e) {
+    hilog.error(Constants.DOMAIN, TAG, "RemoveFromJson Fatal: %{public}s, code: %{public}d", e?.message, e?.code);
+    return false;
+  }
+}
+
+export async function HasSecret(filePath: string): Promise<boolean> {
+  try {
+    const fileExists = await fs.access(filePath);
+
+    if (fileExists) {
+      const fileContent = await fs.readText(filePath);
+
+      if (fileContent.trim().length !== 0) {
+        const data: SecretItem[] | SecretItem = JSON.parse(fileContent) as SecretItem[] | SecretItem;
+        const dataArray: SecretItem[] = Array.isArray(data) ? data : [data];
+        return dataArray.length > 0;
+      } else {
+        return false;
+      }
+    } else {
+      hilog.info(Constants.DOMAIN, TAG, "HasSecret: The file does not exist");
+      return false;
+    }
+  } catch (e) {
+    hilog.error(Constants.DOMAIN, TAG, "HasSecret Fatal: %{public}s, code: %{public}d", e?.message, e?.code);
+    return false;
+  }
 }
