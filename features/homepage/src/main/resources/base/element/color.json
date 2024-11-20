@@ -11,6 +11,14 @@
     {
       "name": "TOTPView_ListItem_deleteButton",
       "value": "#ffe84026"
+    },
+    {
+      "name": "TOTPView_ListItem_Progress_start",
+      "value": "#4e7ca1"
+    },
+    {
+      "name": "TOTPView_ListItem_Progress_end",
+      "value": "#93b5cf"
     }
   ]
 }

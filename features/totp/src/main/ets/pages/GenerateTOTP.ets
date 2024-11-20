@@ -18,11 +18,6 @@ interface TOTPItem {
   timeRemaining: number;
 }
 
-interface TOTPTimeInfo {
-  timeStep: number;
-  timeRemaining: number;
-}
-
 export async function GenerateTOTP(
   secret: string,
   digits: number = 6,
@@ -67,11 +62,7 @@ export async function GenerateTOTP(
 export function GetTOTPTimeInfo(
   timeStep: number = 30,
   epoch: number = Math.floor(Date.now() / 1000)
-): TOTPTimeInfo {
+): number {
   const timeRemaining = timeStep - (epoch % timeStep);
-
-  return {
-    timeStep: timeStep,
-    timeRemaining: timeRemaining
-  };
+  return timeRemaining;
 }

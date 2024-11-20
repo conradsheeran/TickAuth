@@ -101,6 +101,8 @@ export struct TOTP {
 struct TOTPItem {
   @State refresh: boolean = false;
   @Prop totpItem: SecretClass;
+  @State totalTime: number = 30;
+  @State timeRemain: number = 1;
 
   aboutToAppear(): void {
     GenerateTOTP(this.totpItem.secret).then((result) => {
@@ -111,15 +113,12 @@ struct TOTPItem {
     })
 
     try {
-      let timeInfo = GetTOTPTimeInfo()
-      let currentRemain = timeInfo.timeRemaining;
-
+      let currentRemain = GetTOTPTimeInfo();
       setInterval(async () => {
         currentRemain -= 1;
 
         if (currentRemain === 0) {
-          currentRemain = timeInfo.timeStep;
-
+          currentRemain = 30;
           GenerateTOTP(this.totpItem.secret).then((result) => {
             this.totpItem.secret = result.code;
             hilog.info(Constants.DOMAIN, TAG, "GenerateTOTP(%{public}s) Succeed", this.totpItem.alias)
@@ -131,11 +130,16 @@ struct TOTPItem {
         } else {
           this.refresh = false;
         }
-      }, 1000);
+
+        this.timeRemain = currentRemain
+      }, 1000)
     } catch (e) {
       logger.error(Constants.DOMAIN, TAG, "Get the TOTP time parameter fatal: %{public}s", String(e));
     }
   }
+
+  private gradientColor: LinearGradient = new LinearGradient([{ color: $r('app.color.TOTPView_ListItem_Progress_end'), offset: 0.2 },
+                                                              { color: $r('app.color.TOTPView_ListItem_Progress_start'), offset: 1.0 }])
 
   build() {
     Row() {
@@ -155,8 +159,13 @@ struct TOTPItem {
           this.totpItemSecret()
         }
       }
-      .layoutWeight(Constants.TOTPVIEW_LISTITEM_LAYOUTWEIGHT)
       .margin({ right: $r('app.float.TOTPView_ListItem_Text_margin') })
+
+      Blank()
+
+      Progress({ value: this.timeRemain, total: this.totalTime, type: ProgressType.Ring })
+        .color(this.gradientColor)
+        .style({ strokeWidth: $r('app.float.TOTPView_ListItem_Progress_strokeWidth'), shadow: true, enableScanEffect: true })
     }
     .width(Constants.TOTPVIEW_LISTITEM_WIDTH)
     .height(Constants.TOTPVIEW_LISTITEM_HEIGHT)

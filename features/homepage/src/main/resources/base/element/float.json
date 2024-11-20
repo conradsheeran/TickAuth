@@ -55,6 +55,10 @@
     {
       "name": "TOTPView_ListItem_padding",
       "value": "12.0"
+    },
+    {
+      "name": "TOTPView_ListItem_Progress_strokeWidth",
+      "value": "12"
     }
   ]
 }

@@ -11,11 +11,9 @@ export class Constants {
 
   static readonly TOTPVIEW_LISTITEM_MAXLINE: number = 1;
 
-  static readonly TOTPVIEW_LISTITEM_TOTP_WIDTH: string = "100%";
+  static readonly TOTPVIEW_LISTITEM_TOTP_WIDTH: string = "50%";
 
   static readonly TOTPVIEW_LISTITEM_TOTP_HEIGHT: string = "50%";
-
-  static readonly TOTPVIEW_LISTITEM_LAYOUTWEIGHT: number = 1;
 
   static readonly TOTPVIEW_LISTITEM_WIDTH: string = "100%";
 
