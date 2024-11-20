@@ -31,6 +31,10 @@
     {
       "name": "Disclaimer_Divider_margin",
       "value": "9"
+    },
+    {
+      "name": "UserAuthView_Image_size",
+      "value": "230"
     }
   ]
 }

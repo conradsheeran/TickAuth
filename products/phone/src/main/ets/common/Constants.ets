@@ -22,4 +22,10 @@ export class Constants {
   static readonly DISCLAIMER_DIALOG_WIDTH: string = "90%";
 
   static readonly DISCLAIMER_DIALOG_HEIGHT: string = "50%";
+
+  static readonly SETTINGS_USERAUTH: string = "身份认证";
+
+  static readonly USERAUTHVIEW_ITEM_MARGIN: string = "50%";
+
+  static readonly USERAUTHVIEW_SIZE: string = "100%";
 }

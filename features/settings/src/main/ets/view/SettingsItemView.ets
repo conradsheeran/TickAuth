@@ -2,6 +2,7 @@ import { bufferToString, Logger } from "utils";
 import { Constants } from "../common/Constants";
 import { SettingsItemClass } from "../model/SettingsItemModel"
 import { hilog } from "@kit.PerformanceAnalysisKit";
+import { preferences } from "@kit.ArkData";
 
 const TAG: string = "SettingsItemView";
 const logger = new Logger(getContext(this))
@@ -47,6 +48,19 @@ export struct SettingsItemView {
 @Component
 struct SettingsItem {
   @Prop settingsItem: SettingsItemClass;
+  @State isOn: boolean = false;
+
+  private getPreferences(common: Object, fileName: string) {
+    return preferences.getPreferences(getContext(common), fileName);
+  }
+
+  aboutToAppear(): void {
+    this.getPreferences(this, "Preferences").then((preferences: preferences.Preferences) => {
+      preferences.get(this.settingsItem.title, false).then((value: preferences.ValueType) => {
+        this.isOn = Boolean(value)
+      })
+    })
+  }
 
   build() {
     Row() {
@@ -81,12 +95,20 @@ struct SettingsItem {
       .margin({ left: $r('app.float.SettingsItemView_ListItem_Text_left_margin'),
         top: $r('app.float.SettingsItemView_ListItem_Text_top_margin') })
 
-      Toggle({ type: ToggleType.Switch, isOn: false })
+      Toggle({ type: ToggleType.Switch, isOn: this.isOn })
         .onChange((isOn: boolean) => {
           if(isOn) {
-
+            let preferences: Promise<preferences.Preferences> = this.getPreferences(this, "Preferences");
+            preferences.then((result: preferences.Preferences) => {
+              result.put(this.settingsItem.title, true);
+              result.flush();
+            });
           } else {
-
+            let preferences: Promise<preferences.Preferences> = this.getPreferences(this, "Preferences");
+            preferences.then((result: preferences.Preferences) => {
+              result.put(this.settingsItem.title, false);
+              result.flush();
+            });
           }
         }
         )

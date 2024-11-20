@@ -51,6 +51,10 @@
     {
       "name": "UserAuth_title",
       "value": "请进行身份认证"
+    },
+    {
+      "name": "UserAuthView_button",
+      "value": "进行身份认证以进入"
     }
   ]
 }
