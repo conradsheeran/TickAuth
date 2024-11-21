@@ -1,7 +1,6 @@
 import { common } from '@kit.AbilityKit';
 import { SymbolGlyphModifier } from '@kit.ArkUI';
 import { preferences } from '@kit.ArkData';
-import { fileIo as fs } from "@kit.CoreFileKit"
 import { CustomDialog_disclaimer } from '../uicomponent/Disclaimer'
 import { HomePage, NoKeyInJSON } from "homepage"
 import { Settings } from "settings"
@@ -22,7 +21,7 @@ struct Index {
   @StorageLink("login") login: boolean = false;
   @State currentIndex: number = 0;
   @StorageLink("hasKey") hasKey: boolean = false;
-  @State refresh: boolean = false;
+  @StorageLink("refresh") refresh: boolean = false;
   @State CustomDialog_editTOTPItemIsClosed: boolean = false;
   @State alias: string = "default";
 
@@ -67,7 +66,7 @@ struct Index {
         this.secret.issuer = this.alias;
         hilog.debug(Constants.DOMAIN, TAG, "The edited alias is %{public}s", this.secret.issuer)
 
-        await WriteToJson(this.secretFileDir, { "alias": this.secret.issuer, "secret": this.secret.secret });
+        await WriteToJson(this.secretFileDir, { "alias": this.secret.issuer, "secret": this.secret.secret }, "write");
         hilog.debug(Constants.DOMAIN, TAG, "WriteToJson completed", this.secret.issuer)
 
         this.hasKey = true;

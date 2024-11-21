@@ -99,7 +99,7 @@ export struct TOTP {
 
 @Component
 struct TOTPItem {
-  @State refresh: boolean = false;
+  @StorageLink("refresh") refresh: boolean = false;
   @Prop totpItem: SecretClass;
   @State totalTime: number = 30;
   @State timeRemain: number = 1;

@@ -3,5 +3,10 @@
     "symbol": "sys.symbol.person_shield",
     "title": "身份认证",
     "content": "开启后，进入应用前要进行身份认证"
+  },
+  {
+    "symbol": "sys.symbol.share",
+    "title": "导入和导出",
+    "content": "对密钥进行导入和导出"
   }
 ]

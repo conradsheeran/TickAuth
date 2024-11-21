@@ -74,7 +74,7 @@ export struct NoKeyInJSON {
               this.secret.issuer = this.alias;
               hilog.debug(Constants.DOMAIN, TAG, "The edited alias is %{public}s", this.secret.issuer)
 
-              await WriteToJson(this.secretFileDir, { "alias": this.secret.issuer, "secret": this.secret.secret });
+              await WriteToJson(this.secretFileDir, { "alias": this.secret.issuer, "secret": this.secret.secret }, "write");
               hilog.debug(Constants.DOMAIN, TAG, "WriteToJson completed", this.secret.issuer)
 
               this.hasKey = true;

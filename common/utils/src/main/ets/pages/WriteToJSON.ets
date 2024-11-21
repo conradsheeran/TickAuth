@@ -12,15 +12,20 @@ interface SecretItem {
   secret: string;
 }
 
-export async function WriteToJson(filePath: string, newItem: SecretItem): Promise<void> {
-  hilog.info(Constants.DOMAIN, TAG, "WriteToJson Start")
+export async function WriteToJson(
+  filePath: string,
+  data: SecretItem | string,
+  mode: "write" | "append"
+): Promise<void> {
+  hilog.info(Constants.DOMAIN, TAG, "WriteToJson Start");
 
   try {
     let dataArray: SecretItem[] = [];
 
+    // 检查文件是否存在
     const res: boolean = await fs.access(filePath);
     if (res) {
-      hilog.debug(Constants.DOMAIN, TAG, "Access to SECRET JSON file succeed")
+      hilog.debug(Constants.DOMAIN, TAG, "Access to SECRET JSON file succeed");
       const fileContent = await fs.readText(filePath);
 
       if (fileContent.trim().length !== 0) {
@@ -29,23 +34,63 @@ export async function WriteToJson(filePath: string, newItem: SecretItem): Promis
       }
     }
 
-    const fd = (await fs.open(filePath, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE | fs.OpenMode.TRUNC)).fd;
-    const index = dataArray.findIndex((item) => item.alias === newItem.alias);
+    if (mode === "write") {
+      // 第一种模式：写入单个 SecretItem
+      const newItem = data as SecretItem;
+      const index = dataArray.findIndex((item) => item.alias === newItem.alias);
 
-    if (index !== -1) {
-      dataArray[index] = newItem;
-      logger.warn(Constants.DOMAIN, TAG, "%{public}s(Alias) already exists and has overwritten the original data", newItem.alias)
+      if (index !== -1) {
+        dataArray[index] = newItem;
+        hilog.warn(
+          Constants.DOMAIN,
+          TAG,
+          "%{public}s(Alias) already exists and has overwritten the original data",
+          newItem.alias
+        );
+      } else {
+        dataArray.push(newItem);
+        hilog.info(Constants.DOMAIN, TAG, "%{public}s(Alias) added successfully", newItem.alias);
+      }
+    } else if (mode === "append") {
+      // 第二种模式：追加字符串内容
+      const newContent = JSON.parse(data as string);
+
+      if (!Array.isArray(newContent)) {
+        throw new Error("Provided string content must be a JSON array.");
+      }
+
+      newContent.forEach((newItem: SecretItem) => {
+        const index = dataArray.findIndex((item) => item.alias === newItem.alias);
+
+        if (index !== -1) {
+          dataArray[index] = newItem;
+          hilog.warn(
+            Constants.DOMAIN,
+            TAG,
+            "%{public}s(Alias) already exists and has overwritten the original data",
+            newItem.alias
+          );
+        } else {
+          dataArray.push(newItem);
+          hilog.info(Constants.DOMAIN, TAG, "%{public}s(Alias) added successfully", newItem.alias);
+        }
+      });
     } else {
-      dataArray.push(newItem);
-      hilog.info(Constants.DOMAIN, TAG, "%{public}s(Alias) added successfully", newItem.alias)
+      throw new Error("Invalid mode. Use 'write' or 'append'.");
     }
+
+    // 写回文件
+    const fd = (
+      await fs.open(filePath, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE | fs.OpenMode.TRUNC)
+    ).fd;
     await fs.write(fd, JSON.stringify(dataArray, null, 2));
-    hilog.info(Constants.DOMAIN, TAG, "WriteToJson Succeed")
+    hilog.info(Constants.DOMAIN, TAG, "WriteToJson Succeed");
   } catch (e) {
-    logger.fatal(Constants.DOMAIN, TAG, "WriteToJson fatal: %{public}s", String(e))
+    hilog.fatal(Constants.DOMAIN, TAG, "WriteToJson fatal: %{public}s", String(e));
     throw new Error(`WriteToJson fatal: ${e}`);
   }
 }
+
 
 export async function RemoveFromJson(filePath: string, name: string): Promise<boolean> {
   try {

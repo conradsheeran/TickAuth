@@ -3,6 +3,7 @@ import { Constants } from "../common/Constants";
 import { SettingsItemClass } from "../model/SettingsItemModel"
 import { hilog } from "@kit.PerformanceAnalysisKit";
 import { preferences } from "@kit.ArkData";
+import { router } from "@kit.ArkUI";
 
 const TAG: string = "SettingsItemView";
 const logger = new Logger(getContext(this))
@@ -33,6 +34,19 @@ export struct SettingsItemView {
         ForEach(this.SettingsItemList, (item: SettingsItemClass) => {
           ListItem() {
             SettingsItem({ settingsItem: item })
+              .onClick(() => {
+                if (item.title === "导入和导出") {
+                  router.pushUrl({
+                    url: 'pages/ImportAndExport'
+                  }, router.RouterMode.Standard, (e) => {
+                    if (e) {
+                      logger.error(Constants.DOMAIN, TAG, "router.pushUrl fatal: %{public}s", String(e))
+                    }
+
+                    hilog.info(Constants.DOMAIN, TAG, "ImportAndExport: pushUrl Succeed")
+                  });
+                }
+              })
           }
         }, (item: SettingsItemClass) => item.title)
       }
@@ -95,30 +109,13 @@ struct SettingsItem {
       .margin({ left: $r('app.float.SettingsItemView_ListItem_Text_left_margin'),
         top: $r('app.float.SettingsItemView_ListItem_Text_top_margin') })
 
-      Toggle({ type: ToggleType.Switch, isOn: this.isOn })
-        .onChange((isOn: boolean) => {
-          if(isOn) {
-            let preferences: Promise<preferences.Preferences> = this.getPreferences(this, "Preferences");
-            preferences.then((result: preferences.Preferences) => {
-              result.put(this.settingsItem.title, true);
-              result.flush();
-            });
-          } else {
-            let preferences: Promise<preferences.Preferences> = this.getPreferences(this, "Preferences");
-            preferences.then((result: preferences.Preferences) => {
-              result.put(this.settingsItem.title, false);
-              result.flush();
-            });
-          }
+      if (this.settingsItem.title != "身份认证") {
+        if (this.settingsItem.title === "导入和导出") {
+          this.SwitchPage()
         }
-        )
-        .size({
-          "width": $r('app.float.SettingsItemView_ListItem_Toggle_width'),
-          "height": $r('app.float.SettingsItemView_ListItem_Toggle_height')
-        })
-        .selectedColor($r('app.color.toggleBackground'))
-        .margin({ right: $r('app.float.SettingsItemView_ListItem_Toggle_margin') })
-        .alignSelf(ItemAlign.Center)
+      } else {
+        this.Toggle()
+      }
     }
     .width(Constants.SETTINGSITEMVIEW_LISTITEM_WIDTH)
     .height(Constants.SETTINGSITEMVIEW_LISTITEM_HEIGHT)
@@ -126,5 +123,44 @@ struct SettingsItem {
     .backgroundColor(Color.White)
     .padding($r('app.float.SettingsItemView_ListItem_padding'))
     .alignItems(VerticalAlign.Top)
+  }
+
+  @Builder
+  Toggle() {
+    Toggle({ type: ToggleType.Switch, isOn: this.isOn })
+      .onChange((isOn: boolean) => {
+        if (isOn) {
+          let preferences: Promise<preferences.Preferences> = this.getPreferences(this, "Preferences");
+          preferences.then((result: preferences.Preferences) => {
+            result.put(this.settingsItem.title, true);
+            result.flush();
+          });
+        } else {
+          let preferences: Promise<preferences.Preferences> = this.getPreferences(this, "Preferences");
+          preferences.then((result: preferences.Preferences) => {
+            result.put(this.settingsItem.title, false);
+            result.flush();
+          });
+        }
+      })
+      .size({
+        "width": $r('app.float.SettingsItemView_ListItem_Toggle_width'),
+        "height": $r('app.float.SettingsItemView_ListItem_Toggle_height')
+      })
+      .selectedColor($r('app.color.toggleBackground'))
+      .margin({ right: $r('app.float.SettingsItemView_ListItem_Toggle_margin') })
+      .alignSelf(ItemAlign.Center)
+  }
+
+  @Builder
+  SwitchPage() {
+    Blank()
+
+    SymbolGlyph($r('sys.symbol.chevron_right'))
+      .fontSize(30)
+      .fontWeight(FontWeight.Normal)
+      .fontColor([Color.Gray])
+      .margin({ right: 14 })
+      .alignSelf(ItemAlign.Center)
   }
 }
