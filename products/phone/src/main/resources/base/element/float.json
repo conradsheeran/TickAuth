@@ -35,6 +35,22 @@
     {
       "name": "UserAuthView_Image_size",
       "value": "230"
+    },
+    {
+      "name": "ImportAndExport_Symbol_size",
+      "value": "120"
+    },
+    {
+      "name": "ImportAndExport_Symbol_margin",
+      "value": "12"
+    },
+    {
+      "name": "ImportAndExport_Explanation_margin",
+      "value": "48"
+    },
+    {
+      "name": "ImportAndExport_Explanation_fontsize",
+      "value": "12"
     }
   ]
 }

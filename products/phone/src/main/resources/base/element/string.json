@@ -55,6 +55,22 @@
     {
       "name": "UserAuthView_button",
       "value": "进行身份认证以进入"
+    },
+    {
+      "name": "ImportAndExport_explanation_1",
+      "value": "● 请保证导入的密钥文件格式正确："
+    },
+    {
+      "name": "ImportAndExport_explanation_2",
+      "value": "示例文件"
+    },
+    {
+      "name": "ImportAndExport_Button_import",
+      "value": "导入密钥文件"
+    },
+    {
+      "name": "ImportAndExport_Button_export",
+      "value": "导出密钥文件"
     }
   ]
 }

@@ -42,7 +42,6 @@ export struct SettingsItemView {
                     if (e) {
                       logger.error(Constants.DOMAIN, TAG, "router.pushUrl fatal: %{public}s", String(e))
                     }
-
                     hilog.info(Constants.DOMAIN, TAG, "ImportAndExport: pushUrl Succeed")
                   });
                 }

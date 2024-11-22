@@ -22,7 +22,6 @@ export async function WriteToJson(
   try {
     let dataArray: SecretItem[] = [];
 
-    // 检查文件是否存在
     const res: boolean = await fs.access(filePath);
     if (res) {
       hilog.debug(Constants.DOMAIN, TAG, "Access to SECRET JSON file succeed");
@@ -35,7 +34,6 @@ export async function WriteToJson(
     }
 
     if (mode === "write") {
-      // 第一种模式：写入单个 SecretItem
       const newItem = data as SecretItem;
       const index = dataArray.findIndex((item) => item.alias === newItem.alias);
 
@@ -52,7 +50,6 @@ export async function WriteToJson(
         hilog.info(Constants.DOMAIN, TAG, "%{public}s(Alias) added successfully", newItem.alias);
       }
     } else if (mode === "append") {
-      // 第二种模式：追加字符串内容
       const newContent = JSON.parse(data as string);
 
       if (!Array.isArray(newContent)) {
@@ -79,14 +76,13 @@ export async function WriteToJson(
       throw new Error("Invalid mode. Use 'write' or 'append'.");
     }
 
-    // 写回文件
     const fd = (
       await fs.open(filePath, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE | fs.OpenMode.TRUNC)
     ).fd;
     await fs.write(fd, JSON.stringify(dataArray, null, 2));
     hilog.info(Constants.DOMAIN, TAG, "WriteToJson Succeed");
   } catch (e) {
-    hilog.fatal(Constants.DOMAIN, TAG, "WriteToJson fatal: %{public}s", String(e));
+    logger.fatal(Constants.DOMAIN, TAG, "WriteToJson fatal: %{public}s", String(e));
     throw new Error(`WriteToJson fatal: ${e}`);
   }
 }
@@ -117,7 +113,7 @@ export async function RemoveFromJson(filePath: string, name: string): Promise<bo
       return false;
     }
   } catch (e) {
-    hilog.error(Constants.DOMAIN, TAG, "RemoveFromJson Fatal: %{public}s, code: %{public}d", e?.message, e?.code);
+    logger.error(Constants.DOMAIN, TAG, "RemoveFromJson Fatal: %{public}s, code: %{public}d", e?.message, e?.code);
     return false;
   }
 }
@@ -141,7 +137,7 @@ export async function HasSecret(filePath: string): Promise<boolean> {
       return false;
     }
   } catch (e) {
-    hilog.error(Constants.DOMAIN, TAG, "HasSecret Fatal: %{public}s, code: %{public}d", e?.message, e?.code);
+    logger.error(Constants.DOMAIN, TAG, "HasSecret Fatal: %{public}s, code: %{public}d", e?.message, e?.code);
     return false;
   }
 }

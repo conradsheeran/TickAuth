@@ -21,17 +21,17 @@ struct ImportAndExport {
   build() {
     Column() {
       SymbolGlyph($r('sys.symbol.doc_text'))
-        .fontSize(120)
-        .margin({ top: "20%", bottom: 12 })
+        .fontSize($r('app.float.ImportAndExport_Symbol_size'))
+        .margin({ top: Constants.IMPORTANDEXPORT_ITEM_MARGIN, bottom: $r('app.float.ImportAndExport_Symbol_margin') })
 
       Text() {
-        Span("● 请保证导入的密钥文件格式正确：")
+        Span($r('app.string.ImportAndExport_explanation_1'))
           .fontColor(Color.Gray)
-        Span("示例文件")
-          .fontColor("#FF0A59F7")
+        Span($r('app.string.ImportAndExport_explanation_2'))
+          .fontColor($r('app.color.ImportAndExport_explanation_fontcolor'))
           .decoration({
             type: TextDecorationType.Underline,
-            color: "#FF0A59F7"
+            color: $r('app.color.ImportAndExport_explanation_fontcolor')
           })
           .onClick(() => {
             const documentSaveOptions = new picker.DocumentSaveOptions();
@@ -50,13 +50,13 @@ struct ImportAndExport {
             })
           })
       }
-      .margin({ top: 48 })
-      .width("80%")
-      .fontSize(12)
+      .margin({ top: $r('app.float.ImportAndExport_Explanation_margin') })
+      .width(Constants.IMPORTANDEXPORT_ITEM_WIDTH)
+      .fontSize($r('app.float.ImportAndExport_Explanation_fontsize'))
 
       Row() {
-        Button("导入密钥文件")
-          .backgroundColor("#4e7ca1")
+        Button($r('app.string.ImportAndExport_Button_import'))
+          .backgroundColor($r('app.color.ImportAndExport_Button_color'))
           .onClick(() => {
             let documentSelectOptions = new picker.DocumentSelectOptions();
             documentSelectOptions.maxSelectNumber = 1;
@@ -84,8 +84,8 @@ struct ImportAndExport {
 
         Blank()
 
-        Button("导出密钥文件")
-          .backgroundColor("#4e7ca1")
+        Button($r('app.string.ImportAndExport_Button_export'))
+          .backgroundColor($r('app.color.ImportAndExport_Button_color'))
           .onClick(() => {
             const documentSaveOptions = new picker.DocumentSaveOptions();
             documentSaveOptions.newFileNames = ["secret.json"];
@@ -105,13 +105,13 @@ struct ImportAndExport {
             })
           })
       }
-      .margin({ top: "20%" })
-      .width("80%")
+      .margin({ top: Constants.IMPORTANDEXPORT_ITEM_MARGIN })
+      .width(Constants.IMPORTANDEXPORT_ITEM_WIDTH)
 
     }
-    .width("100%")
-    .height("100%")
-    .backgroundColor($r('app.color.start_window_background'))
+    .width(Constants.IMPORTANDEXPORT_SIZE)
+    .height(Constants.IMPORTANDEXPORT_SIZE)
+    .backgroundColor($r('app.color.background'))
     .justifyContent(FlexAlign.Center)
     .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP, SafeAreaEdge.BOTTOM])
   }
