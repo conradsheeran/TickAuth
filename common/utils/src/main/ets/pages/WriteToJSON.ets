@@ -7,7 +7,7 @@ import { Constants } from '../common/Constants';
 const TAG: string = "WriteToJson";
 const logger = new Logger(getContext(this))
 
-interface SecretItem {
+export interface SecretItem {
   alias: string;
   secret: string;
 }

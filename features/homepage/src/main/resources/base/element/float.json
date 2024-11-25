@@ -41,11 +41,15 @@
       "value": "32.0"
     },
     {
-      "name": "TOTPView_ListItem_DeleteButton_size",
+      "name": "TOTPView_ListItem_Button_size",
       "value": "48.0"
     },
     {
       "name": "TOTPView_ListItem_DeleteButton_margin",
+      "value": "60.0"
+    },
+    {
+      "name": "TOTPView_ListItem_EditButton_margin",
       "value": "16.0"
     },
     {

@@ -2,11 +2,12 @@ import { fileIo as fs } from "@kit.CoreFileKit"
 import { buffer } from '@kit.ArkTS';
 import { SecretClass } from "../model/TOTPModel"
 import { BusinessError, pasteboard } from "@kit.BasicServicesKit";
-import { bufferToString, Logger, WriteToJson } from "utils"
+import { bufferToString, Logger, SecretItem, WriteToJson } from "utils"
 import { GenerateTOTP, GetTOTPTimeInfo } from "totp"
 import { Constants } from "../common/Constants";
 import { hilog } from "@kit.PerformanceAnalysisKit";
 import { promptAction } from "@kit.ArkUI";
+import { CustomDialog_editTOTPItem_Secret } from "../uicomponent/EditTOTPItem_Secret";
 
 const TAG: string = "TOTPView";
 const logger = new Logger(getContext(this))
@@ -16,8 +17,27 @@ export struct TOTP {
   @StorageLink("hasKey") hasKey: boolean = false;
   @State TOTPList: Array<SecretClass> = [];
   @Link @Watch("Refresh") refresh: boolean;
+  @State CustomDialog_editTOTPItem_SecretIsClosed: boolean = false;
+  @State editTOTPItem_secret: SecretItem = { alias: "", secret: "" };
 
   private writeToJson = new WriteToJson(getContext(this).filesDir + Constants.SECRET_FILE_DIR)
+
+  editTOTPItem_Secret: CustomDialogController = new CustomDialogController({
+    builder: CustomDialog_editTOTPItem_Secret(
+      {
+        cancel: () => {
+          this.CustomDialog_editTOTPItem_SecretIsClosed = true
+        },
+
+        confirm: () => {
+          this.CustomDialog_editTOTPItem_SecretIsClosed = true
+        },
+
+        oldItem: this.editTOTPItem_secret
+      }),
+
+    customStyle: true,
+  });
 
   aboutToAppear(): void {
     try {
@@ -67,7 +87,7 @@ export struct TOTP {
           .transition(TransitionEffect.OPACITY.animation({ duration: 300 }))
           .swipeAction({
             end: {
-              builder: () => { this.itemEnd(this.TOTPList.indexOf(item), item.alias) },
+              builder: () => { this.itemEnd(this.TOTPList.indexOf(item), item.alias, item) }
             }
           })
         }, (item: SecretClass) => item.alias)
@@ -81,15 +101,33 @@ export struct TOTP {
   }
 
   @Builder
-  itemEnd(index: number, alias: string) {
+  itemEnd(index: number, alias: string, item: SecretClass) {
+    Button({ type: ButtonType.Circle }) {
+      SymbolGlyph($r('sys.symbol.square_and_pencil'))
+        .fontSize($r('app.float.TOTPView_ListItem_DeleteButton_Symbol_size'))
+        .fontColor([Color.White])
+    }
+    .backgroundColor($r('app.color.TOTPView_ListItem_editButton'))
+    .width($r("app.float.TOTPView_ListItem_Button_size"))
+    .height($r("app.float.TOTPView_ListItem_Button_size"))
+    .margin({ left: $r('app.float.TOTPView_ListItem_EditButton_margin'), right: $r('app.float.TOTPView_ListItem_DeleteButton_margin') })
+    .onClick(async () => {
+      this.editTOTPItem_secret = item as SecretItem;
+      this.editTOTPItem_Secret.open()
+      while (!this.CustomDialog_editTOTPItem_SecretIsClosed) {
+        await new Promise<void>(resolve => setTimeout(resolve, 100));
+      }
+      this.CustomDialog_editTOTPItem_SecretIsClosed = false;
+    })
+
     Button({ type: ButtonType.Circle }) {
       SymbolGlyph($r('sys.symbol.trash'))
         .fontSize($r('app.float.TOTPView_ListItem_DeleteButton_Symbol_size'))
         .fontColor([Color.White])
     }
     .backgroundColor($r('app.color.TOTPView_ListItem_deleteButton'))
-    .width($r('app.float.TOTPView_ListItem_DeleteButton_size'))
-    .height($r('app.float.TOTPView_ListItem_DeleteButton_size'))
+    .width($r("app.float.TOTPView_ListItem_Button_size"))
+    .height($r("app.float.TOTPView_ListItem_Button_size"))
     .margin({ left: $r('app.float.TOTPView_ListItem_DeleteButton_margin') })
     .onClick(async () => {
       this.TOTPList.splice(index, 1);
