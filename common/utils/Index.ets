@@ -12,6 +12,6 @@ export {
   Uint8ArrayToSecretParams,
   SecretParams } from './src/main/ets/pages/ProcessSecret'
 
-export { WriteToJson, RemoveFromJson, HasSecret } from './src/main/ets/pages/WriteToJSON'
+export { WriteToJson } from './src/main/ets/pages/WriteToJSON'
 
 export { Logger } from './src/main/ets/pages/Logger'

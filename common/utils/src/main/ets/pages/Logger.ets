@@ -12,6 +12,7 @@ export class Logger {
   private async writeToFile(message: string): Promise<void> {
     const fd = (await fs.open(this.filePath, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE | fs.OpenMode.APPEND)).fd;
     await fs.write(fd, message + "\n");
+    fs.close(fd);
   }
 
   private formatMessage(

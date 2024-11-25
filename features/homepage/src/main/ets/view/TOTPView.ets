@@ -2,7 +2,7 @@ import { fileIo as fs } from "@kit.CoreFileKit"
 import { buffer } from '@kit.ArkTS';
 import { SecretClass } from "../model/TOTPModel"
 import { BusinessError } from "@kit.BasicServicesKit";
-import { bufferToString, Logger, RemoveFromJson } from "utils"
+import { bufferToString, Logger, WriteToJson } from "utils"
 import { GenerateTOTP, GetTOTPTimeInfo } from "totp"
 import { Constants } from "../common/Constants";
 import { hilog } from "@kit.PerformanceAnalysisKit";
@@ -15,6 +15,8 @@ export struct TOTP {
   @StorageLink("hasKey") hasKey: boolean = false;
   @State TOTPList: Array<SecretClass> = [];
   @Link @Watch("Refresh") refresh: boolean;
+
+  private writeToJson = new WriteToJson(getContext(this).filesDir + Constants.SECRET_FILE_DIR)
 
   aboutToAppear(): void {
     try {
@@ -46,8 +48,10 @@ export struct TOTP {
     await fs.read(fd, arrayBuffer).then((readLen) => {
       let buf = buffer.from(arrayBuffer, 0, readLen);
       this.TOTPList = JSON.parse(bufferToString(new Uint8Array(buf.buffer)).replace(/[\u0000-\u001F\u007F-\u009F]/g, "").trim()) as SecretClass[];
+      fs.close(fd);
       hilog.info(Constants.DOMAIN, TAG, "GetSecretFromJson Succeed")
     }).catch((e: BusinessError) => {
+      fs.close(fd)
       logger.error(Constants.DOMAIN, TAG, "Read JSON file fatal: %{public}s", String(e))
     })
   }
@@ -88,7 +92,7 @@ export struct TOTP {
     .margin({ left: $r('app.float.TOTPView_ListItem_DeleteButton_margin') })
     .onClick(async () => {
       this.TOTPList.splice(index, 1);
-      RemoveFromJson(getContext(this).filesDir + Constants.SECRET_FILE_DIR, alias).then((isNull: boolean) => {
+      this.writeToJson.remove(alias).then((isNull: boolean) => {
         if (!isNull) {
           this.hasKey = isNull;
         }

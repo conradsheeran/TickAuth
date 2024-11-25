@@ -5,7 +5,7 @@ import { CustomDialog_disclaimer } from '../uicomponent/Disclaimer'
 import { HomePage, NoKeyInJSON } from "homepage"
 import { Settings } from "settings"
 import { CatchSecretByScan } from "../model/CatchSecretByScan"
-import { SecretParams, WriteToJson, Logger, HasSecret } from "utils"
+import { SecretParams, WriteToJson, Logger } from "utils"
 import { CustomDialog_editTOTPItem } from '../uicomponent/EditTOTPItem';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { Constants } from '../common/Constants';
@@ -30,7 +30,6 @@ struct Index {
 
   // Add the necessary data needed for the SECRET
   private context = getContext(this) as common.UIAbilityContext;
-  private secretFileDir: string = this.context.filesDir + Constants.SECRET_FILE_DIR;
   private secret: SecretParams = {
     secret: "",
     algorithm: "SH1",
@@ -38,6 +37,7 @@ struct Index {
     period: 30,
     issuer: "default"
   };
+  private writeToJson = new WriteToJson(this.context.filesDir + Constants.SECRET_FILE_DIR)
 
   // The main interface UI Component Controller
   private TitleMenuItem: NavigationMenuItem = {
@@ -66,7 +66,7 @@ struct Index {
         this.secret.issuer = this.alias;
         hilog.debug(Constants.DOMAIN, TAG, "The edited alias is %{public}s", this.secret.issuer)
 
-        await WriteToJson(this.secretFileDir, { "alias": this.secret.issuer, "secret": this.secret.secret }, "write");
+        await this.writeToJson.write({ "alias": this.secret.issuer, "secret": this.secret.secret });
         hilog.debug(Constants.DOMAIN, TAG, "WriteToJson completed", this.secret.issuer)
 
         this.hasKey = true;
@@ -174,7 +174,7 @@ struct Index {
 
     // Detect whether to add a key
     try {
-      this.hasKey = await HasSecret(this.secretFileDir);
+      this.hasKey = await this.writeToJson.hasSecret();
     } catch (e) {
       logger.error(Constants.DOMAIN, TAG, "Detect whether to add a key fatal: %{public}s", String(e));
     }

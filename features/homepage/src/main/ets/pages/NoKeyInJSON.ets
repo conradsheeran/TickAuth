@@ -15,7 +15,6 @@ export struct NoKeyInJSON {
   @State CustomDialog_editTOTPItemIsClosed: boolean = false;
 
   private context = getContext(this) as common.UIAbilityContext;
-  private secretFileDir: string = this.context.filesDir + Constants.SECRET_FILE_DIR;
   private secret: SecretParams = {
     secret: "",
     algorithm: "SH1",
@@ -23,6 +22,7 @@ export struct NoKeyInJSON {
     period: 30,
     issuer: "default"
   };
+  private writeToJson = new WriteToJson(this.context.filesDir + Constants.SECRET_FILE_DIR)
 
   editTOTPItem: CustomDialogController = new CustomDialogController({
     builder: CustomDialog_editTOTPItem(
@@ -74,7 +74,7 @@ export struct NoKeyInJSON {
               this.secret.issuer = this.alias;
               hilog.debug(Constants.DOMAIN, TAG, "The edited alias is %{public}s", this.secret.issuer)
 
-              await WriteToJson(this.secretFileDir, { "alias": this.secret.issuer, "secret": this.secret.secret }, "write");
+              await this.writeToJson.write({ "alias": this.secret.issuer, "secret": this.secret.secret });
               hilog.debug(Constants.DOMAIN, TAG, "WriteToJson completed", this.secret.issuer)
 
               this.hasKey = true;

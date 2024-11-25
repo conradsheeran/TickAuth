@@ -16,7 +16,7 @@ struct ImportAndExport {
   @StorageLink("refresh") refresh: boolean = false;
 
   private context = getContext(this) as common.UIAbilityContext;
-  private secretFileDir = this.context.filesDir + Constants.SECRET_FILE_DIR;
+  private writeToJson = new WriteToJson(this.context.filesDir + Constants.SECRET_FILE_DIR)
 
   build() {
     Column() {
@@ -42,7 +42,8 @@ struct ImportAndExport {
             documentViewPicker.save(documentSaveOptions).then((documentSaveResult: Array<string>) => {
               fs.open(documentSaveResult[0], fs.OpenMode.READ_WRITE).then(async (file) => {
                 getContext(this).resourceManager.getRawFileContent("demo.json").then((content) => {
-                  WriteToJson(file.path, bufferToString(content), "append")
+                  new WriteToJson(file.path).append(bufferToString(content))
+                  fs.close(file.fd)
                 })
               })
             }).catch((e: BusinessError) => {
@@ -68,11 +69,13 @@ struct ImportAndExport {
                 let arrayBuffer = new ArrayBuffer(4096);
                 fs.read(file.fd, arrayBuffer).then((readLen) => {
                   let buf = buffer.from(arrayBuffer, 0, readLen);
-                  WriteToJson(this.secretFileDir, bufferToString(new Uint8Array(buf.buffer)).replace(/[\u0000-\u001F\u007F-\u009F]/g, "").trim(), "append").then(() => {
+                  this.writeToJson.append(bufferToString(new Uint8Array(buf.buffer)).replace(/[\u0000-\u001F\u007F-\u009F]/g, "").trim()).then(() => {
                     this.refresh = true;
+                    fs.close(file.fd)
                     hilog.info(Constants.DOMAIN, TAG, "WriteToJson Succeed")
                   })
                 }).catch((e: BusinessError) => {
+                  fs.close(file.fd)
                   logger.error(Constants.DOMAIN, TAG, "Read JSON file fatal: %{public}s", String(e))
                 })
               })
@@ -94,9 +97,11 @@ struct ImportAndExport {
             const documentViewPicker = new picker.DocumentViewPicker(this.context);
             documentViewPicker.save(documentSaveOptions).then((documentSaveResult: Array<string>) => {
               fs.open(documentSaveResult[0], fs.OpenMode.READ_WRITE).then((file) => {
-                fs.copyFile(this.secretFileDir, file.fd).then(() => {
+                fs.copyFile(this.context.filesDir + Constants.SECRET_FILE_DIR, file.fd).then(() => {
+                  fs.close(file.fd)
                   hilog.debug(Constants.DOMAIN, TAG, "copyFile: Export Succeed")
                 }).catch((e: BusinessError) => {
+                  fs.close(file.fd)
                   logger.error(Constants.DOMAIN, TAG, "copyFile Fatal: %{public}s code: {public}d", e.message, e.code)
                 });
               })
