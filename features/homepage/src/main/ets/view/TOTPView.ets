@@ -1,11 +1,12 @@
 import { fileIo as fs } from "@kit.CoreFileKit"
 import { buffer } from '@kit.ArkTS';
 import { SecretClass } from "../model/TOTPModel"
-import { BusinessError } from "@kit.BasicServicesKit";
+import { BusinessError, pasteboard } from "@kit.BasicServicesKit";
 import { bufferToString, Logger, WriteToJson } from "utils"
 import { GenerateTOTP, GetTOTPTimeInfo } from "totp"
 import { Constants } from "../common/Constants";
 import { hilog } from "@kit.PerformanceAnalysisKit";
+import { promptAction } from "@kit.ArkUI";
 
 const TAG: string = "TOTPView";
 const logger = new Logger(getContext(this))
@@ -177,6 +178,15 @@ struct TOTPItem {
     .backgroundColor(Color.White)
     .padding($r('app.float.TOTPView_ListItem_padding'))
     .alignItems(VerticalAlign.Top)
+    .onClick(async () => {
+      await pasteboard.getSystemPasteboard()
+        .setData(pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, this.totpItem.secret));
+
+      promptAction.showToast({
+        message: `验证码（${this.totpItem.alias}）已复制`,
+        duration: 1500
+      });
+    })
   }
 
   @Builder
