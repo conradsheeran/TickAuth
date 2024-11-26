@@ -27,7 +27,11 @@ export struct CustomDialog_editTOTPItem_Secret {
         .margin({ top: 24 })
         .enterKeyType(EnterKeyType.Done)
         .onChange((input)=>{
-          this.newItem.alias = input
+          if (!input.length) {
+            this.newItem.alias = this.oldItem.alias
+          } else {
+            this.newItem.alias = input
+          }
           hilog.debug(Constants.DOMAIN, TAG, "The Input value: %{public}s", input)
         })
         .width("88%")
@@ -42,7 +46,11 @@ export struct CustomDialog_editTOTPItem_Secret {
         .margin({ top: 24 })
         .enterKeyType(EnterKeyType.Done)
         .onChange((input)=>{
-          this.newItem.secret = input
+          if (!input.length) {
+            this.newItem.secret = this.oldItem.secret
+          } else {
+            this.newItem.secret = input
+          }
           hilog.debug(Constants.DOMAIN, TAG, "The Input value: %{public}s", input)
         })
         .width("88%")
