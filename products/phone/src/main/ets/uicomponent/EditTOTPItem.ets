@@ -33,19 +33,36 @@ export struct CustomDialog_editTOTPItem {
 
       Blank()
 
-      Button("确定", {type: ButtonType.Normal})
-        .onClick(() => {
-          if (this.controller != undefined) {
-            this.controller.close()
-            this.confirm()
-            logger.info(Constants.DOMAIN, TAG, "The Confirm button was clicked")
-          }
-        })
-        .width("88%")
-        .backgroundColor($r('sys.color.comp_background_tertiary'))
-        .fontColor($r("sys.color.brand_font"))
-        .borderRadius($r('app.float.BorderRadius'))
-        .margin({ bottom: 12 })
+      Row() {
+        Button("确定", {type: ButtonType.Normal})
+          .onClick(async () => {
+            if (this.controller != undefined) {
+              this.controller.close()
+              this.confirm()
+            }
+          })
+          .backgroundColor($r('sys.color.comp_background_tertiary'))
+          .fontColor($r("sys.color.brand_font"))
+          .borderRadius($r('app.float.BorderRadius'))
+          .margin({ bottom: 12, right: 12 })
+          .width("40%")
+
+        Button("取消", {type: ButtonType.Normal})
+          .onClick(() => {
+            this.controller.close();
+            this.cancel();
+            hilog.info(Constants.DOMAIN, TAG, "The CANCEL button was clicked")
+          })
+          .backgroundColor($r('sys.color.comp_background_tertiary'))
+          .fontColor($r("sys.color.brand_font"))
+          .borderRadius($r('app.float.BorderRadius'))
+          .margin({ bottom: 12, left: 12 })
+          .width("40%")
+      }
+      .width("100%")
+      .padding({ bottom: 8 })
+      .justifyContent(FlexAlign.Center)
+      .margin({ top: "8%" })
     }
     .height('30%')
     .width('96%')

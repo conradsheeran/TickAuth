@@ -1,5 +1,5 @@
 import { common } from '@kit.AbilityKit';
-import { SymbolGlyphModifier } from '@kit.ArkUI';
+import { SelectDialog, SymbolGlyphModifier } from '@kit.ArkUI';
 import { preferences } from '@kit.ArkData';
 import { CustomDialog_disclaimer } from '../uicomponent/Disclaimer'
 import { HomePage, NoKeyInJSON } from "homepage"
@@ -11,6 +11,7 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { Constants } from '../common/Constants';
 import { UserAuth } from '../model/UserAuth';
 import { UserAuthView } from '../view/UserAuth';
+import { CustomDialog_NewTOTPItem } from '../uicomponent/NewTOTPItem';
 
 const TAG: string = "Index"
 const logger = new Logger(getContext(this))
@@ -24,6 +25,64 @@ struct Index {
   @StorageLink("refresh") refresh: boolean = false;
   @State CustomDialog_editTOTPItemIsClosed: boolean = false;
   @State alias: string = "default";
+
+  dialogControllerList: CustomDialogController = new CustomDialogController({
+    builder: SelectDialog({
+      title: '请选择一种添加方式',
+      selectedIndex: 2,
+      confirm: {
+        value: '取消',
+        action: () => {
+          //
+        },
+      },
+      radioContent: [
+        {
+          title: '扫码添加',
+          action: async () => {
+            try {
+              /*this.secret = {
+                issuer: '',
+                secret: 'RUUHXR4GSMMKJ6A4P3J6DKOEVAORGFSZ'
+              }*/
+
+              hilog.info(Constants.DOMAIN, TAG, "The ADD button was clicked")
+
+              this.secret = await CatchSecretByScan(this.context);
+              hilog.info(Constants.DOMAIN, TAG, "The SECRET accepted: %{private}s", String(this.secret.issuer))
+
+              this.editTOTPItem.open()
+              hilog.info(Constants.DOMAIN, TAG, "The editTOTPItem DIALOG opened")
+
+              // Wait for the user to complete the input
+              while (!this.CustomDialog_editTOTPItemIsClosed) {
+                await new Promise<void>(resolve => setTimeout(resolve, 100));
+              }
+
+              this.secret.issuer = this.alias;
+              hilog.debug(Constants.DOMAIN, TAG, "The edited alias is %{public}s", this.secret.issuer)
+
+              await this.writeToJson.write({ "alias": this.secret.issuer, "secret": this.secret.secret });
+              hilog.debug(Constants.DOMAIN, TAG, "WriteToJson completed", this.secret.issuer)
+
+              this.hasKey = true;
+              this.refresh = true;
+              this.CustomDialog_editTOTPItemIsClosed = false
+              logger.info(Constants.DOMAIN, TAG, "The SECRET(%{public}s) has been added", this.secret.issuer)
+            } catch (e) {
+              logger.error(Constants.DOMAIN, TAG, "ADD button: %{public}s", String(e));
+            }
+          }
+        },
+        {
+          title: '手动输入 TOTP 验证码参数',
+          action: () => {
+            this.newTOTPItem.open()
+          }
+        }
+      ]
+    })
+  })
 
   // SYSTEM ICON
   private plus: SymbolGlyphModifier = new SymbolGlyphModifier($r('sys.symbol.plus'));
@@ -44,38 +103,7 @@ struct Index {
     'value':"",
     'symbolIcon': this.plus,
     'action': async () => {
-      try {
-        /*this.secret = {
-          issuer: '',
-          secret: 'RUUHXR4GSMMKJ6A4P3J6DKOEVAORGFSZ'
-        }*/
-
-        hilog.info(Constants.DOMAIN, TAG, "The ADD button was clicked")
-
-        this.secret = await CatchSecretByScan(this.context);
-        hilog.info(Constants.DOMAIN, TAG, "The SECRET accepted: %{private}s", String(this.secret.issuer))
-
-        this.editTOTPItem.open()
-        hilog.info(Constants.DOMAIN, TAG, "The editTOTPItem DIALOG opened")
-
-        // Wait for the user to complete the input
-        while (!this.CustomDialog_editTOTPItemIsClosed) {
-          await new Promise<void>(resolve => setTimeout(resolve, 100));
-        }
-
-        this.secret.issuer = this.alias;
-        hilog.debug(Constants.DOMAIN, TAG, "The edited alias is %{public}s", this.secret.issuer)
-
-        await this.writeToJson.write({ "alias": this.secret.issuer, "secret": this.secret.secret });
-        hilog.debug(Constants.DOMAIN, TAG, "WriteToJson completed", this.secret.issuer)
-
-        this.hasKey = true;
-        this.refresh = true;
-        this.CustomDialog_editTOTPItemIsClosed = false
-        logger.info(Constants.DOMAIN, TAG, "The SECRET(%{public}s) has been added", this.secret.issuer)
-      } catch (e) {
-        logger.error(Constants.DOMAIN, TAG, "ADD button: %{public}s", String(e));
-      }
+      this.dialogControllerList.open()
     }
   };
 
@@ -129,6 +157,25 @@ struct Index {
         },
 
         alias: $alias
+      }),
+
+    customStyle: true,
+
+    onWillDismiss:(dismissDialogAction: DismissDialogAction)=> {
+      hilog.debug(Constants.DOMAIN, TAG, "editTOTPItem: User try to exit. Action: %{public}s", dismissDialogAction.reason.toString())
+    }
+  });
+
+  newTOTPItem: CustomDialogController = new CustomDialogController({
+    builder: CustomDialog_NewTOTPItem(
+      {
+        cancel: () => {
+          this.CustomDialog_editTOTPItemIsClosed = true
+        },
+
+        confirm: () => {
+          this.CustomDialog_editTOTPItemIsClosed = true
+        },
       }),
 
     customStyle: true,

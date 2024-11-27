@@ -1,19 +1,21 @@
+import { buffer } from "@kit.ArkTS";
+
 export class Base32 {
-  public base32ToHex(base32: string): string {
-    const base32Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-    let bits = '';
-    let hex = '';
-
-    for (let i = 0; i < base32.length; i++) {
-      const val = base32Chars.indexOf(base32.charAt(i).toUpperCase());
-      bits += val.toString(2).padStart(5, '0');
+  static decodeToBase32(base32: string): buffer.Buffer {
+    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+    const base32Cleaned = base32.replace(/=+$/, "").toUpperCase();
+    let bits = "";
+    for (const char of base32Cleaned) {
+      const index = alphabet.indexOf(char);
+      if (index === -1) {
+        throw new Error("Invalid Base32 character.");
+      }
+      bits += index.toString(2).padStart(5, "0");
     }
-
-    for (let i = 0; i + 4 <= bits.length; i += 4) {
-      const chunk = bits.substring(i, i + 4);
-      hex += parseInt(chunk, 2).toString(16);
+    const bytes: number[] = [];
+    for (let i = 0; i < bits.length; i += 8) {
+      bytes.push(parseInt(bits.substring(i, i + 8).padEnd(8, "0"), 2));
     }
-
-    return hex;
+    return buffer.from(bytes);
   }
 }

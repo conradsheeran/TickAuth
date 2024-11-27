@@ -55,8 +55,6 @@ export struct TOTP {
     } catch (e) {
       logger.error(Constants.DOMAIN, TAG, "GetSecretFromJson fatal: %{public}s", String(e))
     }
-
-    this.refresh = false;
   }
 
   async GetSecretFromJson() {

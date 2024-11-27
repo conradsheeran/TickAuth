@@ -1,5 +1,4 @@
 import { cryptoFramework } from '@kit.CryptoArchitectureKit';
-import { buffer } from '@kit.ArkTS';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { Constants } from '../common/Constants';
 
@@ -14,27 +13,18 @@ async function generateSymKeyByData(symKeyData: Uint8Array) {
   return symKey;
 }
 
-export async function GenerateHMAC(secret: string, macAlgName: string, updateSecret?: string) {
+export async function GenerateHMAC(secret: ArrayBuffer, message: ArrayBuffer, macAlgName: string) {
   hilog.info(Constants.DOMAIN, TAG, "GenerateHMAC Start")
 
-  let keyData = new Uint8Array(buffer.from("12345678abcdefgh", 'utf-8').buffer);
-
+  let keyData = new Uint8Array(secret);
   let key = await generateSymKeyByData(keyData);
   hilog.debug(Constants.DOMAIN, TAG, "GenerateSymKey Succeed")
 
   let mac = cryptoFramework.createMac(macAlgName);
   await mac.init(key);
   hilog.debug(Constants.DOMAIN, TAG, "Mac Init Succeed")
-
-  await mac.update({ data: new Uint8Array(buffer.from(secret, 'utf-8').buffer) });
+  await mac.update({ data: new Uint8Array(message) });
   hilog.debug(Constants.DOMAIN, TAG, "Mac Crypto Succeed")
-
-  if (updateSecret != undefined) {
-    const HMACUpdateData = updateSecret;
-    await mac.update({ data: new Uint8Array(buffer.from(HMACUpdateData, 'utf-8').buffer) });
-    hilog.debug(Constants.DOMAIN, TAG, "Mac Update Succeed")
-  }
-
   let macResult = await mac.doFinal();
   hilog.info(Constants.DOMAIN, TAG, "GenerateHMAC Succeed")
 

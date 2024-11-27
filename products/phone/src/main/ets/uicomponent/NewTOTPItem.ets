@@ -2,14 +2,13 @@ import { hilog } from "@kit.PerformanceAnalysisKit";
 import { Logger, SecretItem, WriteToJson } from "utils";
 import { Constants } from "../common/Constants";
 
-const TAG: string = "CustomDialog_editTOTPItem_Secret";
+const TAG: string = "CustomDialog_NewTOTPItem";
 const logger = new Logger(getContext(this))
 
 @CustomDialog
-export struct CustomDialog_editTOTPItem_Secret {
-  @Prop oldItem: SecretItem;
+export struct CustomDialog_NewTOTPItem {
   @StorageLink("refresh") refresh: boolean = false;
-  @State newItem: SecretItem = { alias: this.oldItem.alias, secret: this.oldItem.secret };
+  @State newItem: SecretItem = { alias: "", secret: "" };
 
   controller: CustomDialogController = new CustomDialogController({builder: ""});
   cancel: Function = () => {};
@@ -23,12 +22,12 @@ export struct CustomDialog_editTOTPItem_Secret {
         .margin({top: '10%'})
         .width('90%')
 
-      TextInput({ placeholder: this.oldItem.alias })
+      TextInput({ placeholder: this.newItem.alias })
         .margin({ top: 24 })
         .enterKeyType(EnterKeyType.Done)
         .onChange((input)=>{
           if (!input.length) {
-            this.newItem.alias = this.oldItem.alias
+            // this.newItem.alias = this.oldItem.alias
           } else {
             this.newItem.alias = input
           }
@@ -42,12 +41,12 @@ export struct CustomDialog_editTOTPItem_Secret {
         .margin({top: '10%'})
         .width('90%')
 
-      TextInput({ placeholder: this.oldItem.secret })
+      TextInput({ placeholder: this.newItem.secret })
         .margin({ top: 24 })
         .enterKeyType(EnterKeyType.Done)
         .onChange((input)=>{
           if (!input.length) {
-            this.newItem.secret = this.oldItem.secret
+            // this.newItem.secret = this.oldItem.secret
           } else {
             this.newItem.secret = input
           }
@@ -57,6 +56,7 @@ export struct CustomDialog_editTOTPItem_Secret {
 
       Blank()
 
+
       Row() {
         Button("确定", {type: ButtonType.Normal})
           .onClick(async () => {
@@ -64,14 +64,14 @@ export struct CustomDialog_editTOTPItem_Secret {
               this.controller.close()
               this.confirm()
               await new WriteToJson(getContext(this).filesDir + Constants.SECRET_FILE_DIR)
-                .edit(this.oldItem, this.newItem);
+                .write(this.newItem);
               logger.info(Constants.DOMAIN, TAG, "The Confirm button was clicked")
             }
 
             this.refresh = true
           })
           .backgroundColor($r('sys.color.comp_background_tertiary'))
-          .fontColor($r("sys.color.brand_font"))
+          .fontColor(Color.Black)
           .borderRadius($r('app.float.BorderRadius'))
           .margin({ bottom: 12, right: 12 })
           .width("40%")
@@ -83,7 +83,7 @@ export struct CustomDialog_editTOTPItem_Secret {
             hilog.info(Constants.DOMAIN, TAG, "The CANCEL button was clicked")
           })
           .backgroundColor($r('sys.color.comp_background_tertiary'))
-          .fontColor($r("sys.color.brand_font"))
+          .fontColor(Color.Black)
           .borderRadius($r('app.float.BorderRadius'))
           .margin({ bottom: 12, left: 12 })
           .width("40%")
@@ -91,7 +91,7 @@ export struct CustomDialog_editTOTPItem_Secret {
       .width("100%")
       .padding({ bottom: 8 })
       .justifyContent(FlexAlign.Center)
-      .margin({ top: "8%" })
+      .margin({ top: Constants.DISCLAIMER_BUTTON_ENSEMBLE_MARGIN })
     }
     .height('48%')
     .width('96%')
