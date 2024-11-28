@@ -13,7 +13,7 @@ const logger = new Logger(getContext(this))
 @Entry
 @Component
 struct ImportAndExport {
-  @StorageLink("refresh") refresh: boolean = false;
+  @LocalStorageLink("refresh") refresh: boolean = false;
 
   private context = getContext(this) as common.UIAbilityContext;
   private writeToJson = new WriteToJson(this.context.filesDir + Constants.SECRET_FILE_DIR)

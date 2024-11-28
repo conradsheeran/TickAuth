@@ -3,7 +3,7 @@ import { Constants } from "../common/Constants"
 
 @Component
 export struct UserAuthView {
-  @StorageLink("login") login: boolean = false;
+  @LocalStorageLink("login") login: boolean = false;
 
   build() {
     Column() {

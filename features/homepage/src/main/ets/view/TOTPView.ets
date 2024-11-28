@@ -14,9 +14,10 @@ const logger = new Logger(getContext(this))
 
 @Component
 export struct TOTP {
-  @StorageLink("hasKey") hasKey: boolean = false;
+  @LocalStorageLink("hasKey") hasKey: boolean = false;
+  @Link refresh: boolean;
+  @Link onForeground: boolean;
   @State TOTPList: Array<SecretClass> = [];
-  @Link @Watch("Refresh") refresh: boolean;
   @State CustomDialog_editTOTPItem_SecretIsClosed: boolean = false;
   @State editTOTPItem_secret: SecretItem = { alias: "", secret: "" };
 
@@ -47,14 +48,7 @@ export struct TOTP {
     }
 
     this.refresh = false;
-  }
-
-  Refresh() {
-    try {
-      this.GetSecretFromJson();
-    } catch (e) {
-      logger.error(Constants.DOMAIN, TAG, "GetSecretFromJson fatal: %{public}s", String(e))
-    }
+    this.onForeground = false;
   }
 
   async GetSecretFromJson() {
@@ -80,16 +74,18 @@ export struct TOTP {
       List({ space: Constants.TOTPVIEW_LIST_SPACE }) {
         ForEach(this.TOTPList, (item: SecretClass) => {
           ListItem() {
-            TOTPItem({ totpItem: item })
+            TOTPItem({ totpItem: item });
           }
-          .transition(TransitionEffect.OPACITY.animation({ duration: 300 }))
           .swipeAction({
             end: {
-              builder: () => { this.itemEnd(this.TOTPList.indexOf(item), item.alias, item) }
+              builder: () => {
+                this.itemEnd(this.TOTPList.indexOf(item), item.alias, item);
+              }
             }
-          })
+          });
         }, (item: SecretClass) => item.alias)
       }
+      .transition(TransitionEffect.OPACITY.animation({ duration: Constants.ANIMATION_DURING }))
       .width(Constants.TOTPVIEW_LIST_SIZE)
       .height(Constants.TOTPVIEW_LIST_SIZE)
       .scrollBar(BarState.Auto)
@@ -140,47 +136,37 @@ export struct TOTP {
 
 @Component
 struct TOTPItem {
-  @StorageLink("refresh") refresh: boolean = false;
   @Prop totpItem: SecretClass;
+  @State code: string = '';
   @State totalTime: number = 30;
-  @State timeRemain: number = 1;
+  @State currentRemain: number = GetTOTPTimeInfo();
+
+  private gradientColor: LinearGradient = new LinearGradient([{ color: $r('app.color.TOTPView_ListItem_Progress_end'), offset: 0.2 },
+                                                              { color: $r('app.color.TOTPView_ListItem_Progress_start'), offset: 1.0 }])
+
+  private generateTOTP() {
+    GenerateTOTP(this.totpItem.secret).then((result) => {
+      this.code = result.code;
+      hilog.info(Constants.DOMAIN, TAG, "GenerateTOTP(%{public}s) Succeed", this.totpItem.alias);
+    }).catch((e: BusinessError) => {
+      logger.error(Constants.DOMAIN, TAG, "GenerateTOTP fatal: %{public}s", String(e));
+    });
+  }
 
   aboutToAppear(): void {
-    GenerateTOTP(this.totpItem.secret).then((result) => {
-      this.totpItem.secret = result.code;
-      hilog.info(Constants.DOMAIN, TAG, "GenerateTOTP(%{public}s) Succeed", this.totpItem.alias)
-    }).catch((e: BusinessError) => {
-      logger.error(Constants.DOMAIN, TAG, "GenerateTOTP fatal: %{public}s", String(e))
-    })
-
+    this.generateTOTP();
     try {
-      let currentRemain = GetTOTPTimeInfo();
       setInterval(async () => {
-        currentRemain -= 1;
-
-        if (currentRemain === 0) {
-          currentRemain = 30;
-          GenerateTOTP(this.totpItem.secret).then((result) => {
-            this.totpItem.secret = result.code;
-            hilog.info(Constants.DOMAIN, TAG, "GenerateTOTP(%{public}s) Succeed", this.totpItem.alias)
-          }).catch((e: BusinessError) => {
-            logger.error(Constants.DOMAIN, TAG, "GenerateTOTP fatal: %{public}s", String(e))
-          })
-
-          this.refresh = true;
-        } else {
-          this.refresh = false;
+        this.currentRemain -= 1;
+        if (this.currentRemain === 0) {
+          this.currentRemain = 30;
+          this.generateTOTP();
         }
-
-        this.timeRemain = currentRemain
       }, 1000)
     } catch (e) {
       logger.error(Constants.DOMAIN, TAG, "Get the TOTP time parameter fatal: %{public}s", String(e));
     }
   }
-
-  private gradientColor: LinearGradient = new LinearGradient([{ color: $r('app.color.TOTPView_ListItem_Progress_end'), offset: 0.2 },
-                                                              { color: $r('app.color.TOTPView_ListItem_Progress_start'), offset: 1.0 }])
 
   build() {
     Row() {
@@ -192,19 +178,25 @@ struct TOTPItem {
           .textAlign(TextAlign.Start)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
           .maxLines(Constants.TOTPVIEW_LISTITEM_MAXLINE)
-          .transition(TransitionEffect.OPACITY.animation({ duration: 300 }))
+          .transition(TransitionEffect.OPACITY.animation({ duration: Constants.ANIMATION_DURING }))
 
-        if (!this.refresh) {
-          this.totpItemSecret()
-        } else {
-          this.totpItemSecret()
-        }
+        Text(this.code)
+          .height(Constants.TOTPVIEW_LISTITEM_TOTP_HEIGHT)
+          .width(Constants.TOTPVIEW_LISTITEM_TOTP_WIDTH)
+          .fontSize($r('app.float.TOTPView_ListItem_Secret_fontsize'))
+          .fontColor($r('app.color.TOTPView_ListItem_fontcolor'))
+          .textAlign(TextAlign.Start)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+          .maxLines(Constants.TOTPVIEW_LISTITEM_MAXLINE)
+          .margin({ bottom: $r('app.float.TOTPView_ListItem_Secret_margin') })
+          .transition(TransitionEffect.OPACITY.animation({ duration: Constants.ANIMATION_DURING }))
+
       }
       .margin({ right: $r('app.float.TOTPView_ListItem_Text_margin') })
 
       Blank()
 
-      Progress({ value: this.timeRemain, total: this.totalTime, type: ProgressType.Ring })
+      Progress({ value: this.currentRemain, total: this.totalTime, type: ProgressType.Ring })
         .color(this.gradientColor)
         .style({ strokeWidth: $r('app.float.TOTPView_ListItem_Progress_strokeWidth'), shadow: true, enableScanEffect: true })
     }
@@ -216,26 +208,12 @@ struct TOTPItem {
     .alignItems(VerticalAlign.Top)
     .onClick(async () => {
       await pasteboard.getSystemPasteboard()
-        .setData(pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, this.totpItem.secret));
+        .setData(pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, this.code));
 
       promptAction.showToast({
         message: `验证码（${this.totpItem.alias}）已复制`,
         duration: 1500
       });
     })
-  }
-
-  @Builder
-  totpItemSecret() {
-    Text(this.totpItem.secret)
-      .height(Constants.TOTPVIEW_LISTITEM_TOTP_HEIGHT)
-      .width(Constants.TOTPVIEW_LISTITEM_TOTP_WIDTH)
-      .fontSize($r('app.float.TOTPView_ListItem_Secret_fontsize'))
-      .fontColor($r('app.color.TOTPView_ListItem_fontcolor'))
-      .textAlign(TextAlign.Start)
-      .textOverflow({ overflow: TextOverflow.Ellipsis })
-      .maxLines(Constants.TOTPVIEW_LISTITEM_MAXLINE)
-      .margin({ bottom: $r('app.float.TOTPView_ListItem_Secret_margin') })
-      .transition(TransitionEffect.OPACITY.animation({ duration: 300 }))
   }
 }

@@ -19,12 +19,13 @@ const logger = new Logger(getContext(this))
 @Entry
 @Component
 struct Index {
-  @StorageLink("login") login: boolean = false;
-  @State currentIndex: number = 0;
-  @StorageLink("hasKey") hasKey: boolean = false;
-  @StorageLink("refresh") refresh: boolean = false;
+  @LocalStorageLink("login") login: boolean = false;
+  @LocalStorageLink("hasKey") hasKey: boolean = false;
+  @LocalStorageLink("refresh") refresh: boolean = false;
   @State CustomDialog_editTOTPItemIsClosed: boolean = false;
   @State alias: string = "default";
+  @State currentIndex: number = 0;
+  @State onForeground: boolean = false;
 
   dialogControllerList: CustomDialogController = new CustomDialogController({
     builder: SelectDialog({
@@ -192,6 +193,8 @@ struct Index {
 
   // LIFECYCLE
   async onPageShow(): Promise<void> {
+    this.onForeground = true;
+
     // Detect whether the user agrees to the disclaimer
     this.getPreferences(this, "Preferences").then((preferences: preferences.Preferences) => {
       preferences.get("disclaimerIsConfirm", false).then((value: preferences.ValueType) => {
@@ -229,6 +232,10 @@ struct Index {
 
   pageStack: NavPathStack = new NavPathStack();
 
+  onPageHide(): void {
+    this.onForeground = false;
+  }
+
   build() {
     if (this.login) {
       this.Index()
@@ -243,7 +250,7 @@ struct Index {
       Tabs({ barPosition: BarPosition.End, index: this.currentIndex, controller: this.tabsController }) {
         TabContent() {
           if (this.hasKey) {
-            HomePage({ refresh: this.refresh });
+            HomePage({ refresh: this.refresh, onForeground: this.onForeground });
           } else {
             NoKeyInJSON({ hasKey: this.hasKey });
           }

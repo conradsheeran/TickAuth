@@ -7,7 +7,7 @@ const logger = new Logger(getContext(this))
 
 @CustomDialog
 export struct CustomDialog_NewTOTPItem {
-  @StorageLink("refresh") refresh: boolean = false;
+  @LocalStorageLink("refresh") refresh: boolean = false;
   @State newItem: SecretItem = { alias: "", secret: "" };
 
   controller: CustomDialogController = new CustomDialogController({builder: ""});
