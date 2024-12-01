@@ -69,6 +69,10 @@
     {
       "name": "settings",
       "srcPath": "./features/settings",
+    },
+    {
+      "name": "uicomponent",
+      "srcPath": "./common/uicomponent",
     }
   ]
 }

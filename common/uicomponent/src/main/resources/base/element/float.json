@@ -1,0 +1,24 @@
+{
+  "float": [
+    {
+      "name": "CustomDialog_Warning_Title_fontsize",
+      "value": "24"
+    },
+    {
+      "name": "CustomDialog_Warning_TextInput_margin",
+      "value": "24"
+    },
+    {
+      "name": "CustomDialog_Warning_Button_margin",
+      "value": "12"
+    },
+    {
+      "name": "CustomDialog_Warning_Button_padding",
+      "value": "8"
+    },
+    {
+      "name": "BorderRadius",
+      "value": "16"
+    }
+  ]
+}

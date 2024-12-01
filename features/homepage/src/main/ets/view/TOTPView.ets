@@ -8,6 +8,7 @@ import { Constants } from "../common/Constants";
 import { hilog } from "@kit.PerformanceAnalysisKit";
 import { promptAction } from "@kit.ArkUI";
 import { CustomDialog_editTOTPItem_Secret } from "../uicomponent/EditTOTPItem_Secret";
+import { CustomDialog_Warning } from "uicomponent"
 
 const TAG: string = "TOTPView";
 const logger = new Logger(getContext(this))
@@ -22,6 +23,8 @@ export struct TOTP {
   @State editTOTPItem_secret: SecretItem = { alias: "", secret: "" };
 
   private writeToJson = new WriteToJson(getContext(this).filesDir + Constants.SECRET_FILE_DIR)
+  private deleteIndex: number = 0;
+  private deleteAlias: string = "";
 
   editTOTPItem_Secret: CustomDialogController = new CustomDialogController({
     builder: CustomDialog_editTOTPItem_Secret(
@@ -35,6 +38,36 @@ export struct TOTP {
         },
 
         oldItem: this.editTOTPItem_secret
+      }),
+
+    customStyle: true,
+  });
+
+  warningDelete: CustomDialogController = new CustomDialogController({
+    builder: CustomDialog_Warning(
+      {
+        cancel: () => {
+          hilog.info(Constants.DOMAIN, TAG, "CustomDialog_Warning: The CANCEL button has been clicked");
+        },
+
+        confirm: () => {
+          hilog.info(Constants.DOMAIN, TAG, "CustomDialog_Warning: The Confirm button has been clicked")
+          this.TOTPList.splice(this.deleteIndex, 1);
+          this.writeToJson.remove(this.deleteAlias).then((isNull: boolean) => {
+            if (!isNull) {
+              this.hasKey = isNull;
+            }
+          })
+        },
+
+        symbol: $r("sys.symbol.exclamationmark_triangle_fill"),
+        symbolColor: "#fecc11",
+        title: "警告",
+        content: "DELETE",
+        contentSpan: "删除",
+        retryContent: "请输入正确的字符",
+        confirmButtonFontColor: $r("sys.color.warning"),
+        cancelButtonFontColor: $r("sys.color.brand_font")
       }),
 
     customStyle: true,
@@ -123,13 +156,10 @@ export struct TOTP {
     .width($r("app.float.TOTPView_ListItem_Button_size"))
     .height($r("app.float.TOTPView_ListItem_Button_size"))
     .margin({ left: $r('app.float.TOTPView_ListItem_DeleteButton_margin') })
-    .onClick(async () => {
-      this.TOTPList.splice(index, 1);
-      this.writeToJson.remove(alias).then((isNull: boolean) => {
-        if (!isNull) {
-          this.hasKey = isNull;
-        }
-      })
+    .onClick(() => {
+      this.deleteIndex = index;
+      this.deleteAlias = alias;
+      this.warningDelete.open()
     })
   }
 }
