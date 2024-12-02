@@ -19,7 +19,7 @@ import { fileIo as fs } from "@kit.CoreFileKit"
 import { buffer } from '@kit.ArkTS';
 import { SecretClass } from "../model/TOTPModel"
 import { BusinessError, pasteboard } from "@kit.BasicServicesKit";
-import { bufferToString, Logger, SecretItem, WriteToJson } from "utils"
+import { bufferToString, Logger, Preference, SecretItem, WriteToJson } from "utils"
 import { GenerateTOTP, GetTOTPTimeInfo } from "totp"
 import { Constants } from "../common/Constants";
 import { hilog } from "@kit.PerformanceAnalysisKit";
@@ -40,6 +40,8 @@ export struct TOTP {
   @State editTOTPItem_secret: SecretItem = { alias: "", secret: "" };
 
   private writeToJson = new WriteToJson(getContext(this).filesDir + Constants.SECRET_FILE_DIR)
+  private preferences = new Preference(getContext(this), "Preferences");
+  private oldPined: Array<string> = [];
   private deleteIndex: number = 0;
   private deleteAlias: string = "";
 
@@ -90,13 +92,14 @@ export struct TOTP {
     customStyle: true,
   });
 
-  aboutToAppear(): void {
+  async aboutToAppear(): Promise<void> {
     try {
       this.GetSecretFromJson();
     } catch (e) {
       logger.error(Constants.DOMAIN, TAG, "GetSecretFromJson fatal: %{public}s", String(e))
     }
 
+    this.oldPined = await this.preferences.get("PinedAlias", []) as Array<string>;
     this.refresh = false;
     this.onForeground = false;
   }
@@ -112,6 +115,28 @@ export struct TOTP {
       let buf = buffer.from(arrayBuffer, 0, readLen);
       this.TOTPList = JSON.parse(bufferToString(new Uint8Array(buf.buffer)).replace(/[\u0000-\u001F\u007F-\u009F]/g, "").trim()) as SecretClass[];
       fs.close(fd);
+
+      this.preferences.has("PinedAlias").then(async (has: boolean) => {
+        if (has) {
+          let pinedItems = await this.preferences.get("PinedAlias", []) as Array<string>;
+
+          this.TOTPList.sort((a, b) => {
+            const aIndex = pinedItems.indexOf(a.alias);
+            const bIndex = pinedItems.indexOf(b.alias);
+
+            if (aIndex === -1 && bIndex === -1) {
+              return a.alias.localeCompare(b.alias); //todo: 不在 pinedItems 中时按字母顺序排序，考虑作为一个设置选项
+            } else if (aIndex === -1) {
+              return 1;
+            } else if (bIndex === -1) {
+              return -1;
+            } else {
+              return aIndex - bIndex;
+            }
+          })
+        }
+      })
+
       hilog.info(Constants.DOMAIN, TAG, "GetSecretFromJson Succeed")
     }).catch((e: BusinessError) => {
       fs.close(fd)
@@ -124,7 +149,14 @@ export struct TOTP {
       List({ space: Constants.TOTPVIEW_LIST_SPACE }) {
         ForEach(this.TOTPList, (item: SecretClass) => {
           ListItem() {
-            TOTPItem({ totpItem: item });
+            if (this.oldPined.some(oldPinedItem => oldPinedItem === item.alias)) {
+              TOTPItem({ totpItem: item })
+                .borderWidth(1)
+                .borderRadius($r('app.float.BorderRadius'))
+                .borderColor("#fecc11")
+            } else {
+              TOTPItem({ totpItem: item })
+            }
           }
           .swipeAction({
             end: {
@@ -146,6 +178,39 @@ export struct TOTP {
 
   @Builder
   itemEnd(index: number, alias: string, item: SecretClass) {
+    Button({ type: ButtonType.Circle }) {
+      if (this.oldPined.some(item => item === alias)) {
+        SymbolGlyph($r('sys.symbol.undo'))
+          .fontSize($r('app.float.TOTPView_ListItem_DeleteButton_Symbol_size'))
+          .fontColor([Color.White])
+      } else {
+        SymbolGlyph($r('sys.symbol.arrowshape_up_to_line_fill'))
+          .fontSize($r('app.float.TOTPView_ListItem_DeleteButton_Symbol_size'))
+          .fontColor([Color.White])
+      }
+    }
+    .backgroundColor("#fecc11")
+    .width($r("app.float.TOTPView_ListItem_Button_size"))
+    .height($r("app.float.TOTPView_ListItem_Button_size"))
+    .margin({ left: 16, right: $r('app.float.TOTPView_ListItem_DeleteButton_margin') })
+    .onClick(async () => {
+      if (!this.oldPined.length) {
+        this.preferences.put("PinedAlias", [alias])
+        this.refresh = true
+      } else {
+        if (this.oldPined.some(item => item === alias)) {
+          const index = this.oldPined.indexOf(alias);
+          this.oldPined.splice(index, 1)
+          this.preferences.put("PinedAlias", this.oldPined)
+          this.refresh = true;
+        } else {
+          let newPined: Array<string> = [...this.oldPined, alias];
+          this.preferences.put("PinedAlias", newPined)
+          this.refresh = true;
+        }
+      }
+    })
+
     Button({ type: ButtonType.Circle }) {
       SymbolGlyph($r('sys.symbol.square_and_pencil'))
         .fontSize($r('app.float.TOTPView_ListItem_DeleteButton_Symbol_size'))

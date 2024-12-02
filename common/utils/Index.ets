@@ -32,3 +32,5 @@ export {
 export { WriteToJson, SecretItem } from './src/main/ets/pages/WriteToJSON'
 
 export { Logger } from './src/main/ets/pages/Logger'
+
+export { Preference } from './src/main/ets/pages/Preference'

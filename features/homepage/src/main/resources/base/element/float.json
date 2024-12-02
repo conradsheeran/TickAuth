@@ -46,11 +46,11 @@
     },
     {
       "name": "TOTPView_ListItem_DeleteButton_margin",
-      "value": "60.0"
+      "value": "108.0"
     },
     {
       "name": "TOTPView_ListItem_EditButton_margin",
-      "value": "16.0"
+      "value": "54"
     },
     {
       "name": "BorderRadius",

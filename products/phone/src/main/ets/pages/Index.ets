@@ -22,7 +22,7 @@ import { CustomDialog_disclaimer } from '../uicomponent/Disclaimer'
 import { HomePage, NoKeyInJSON } from "homepage"
 import { Settings } from "settings"
 import { CatchSecretByScan } from "../model/CatchSecretByScan"
-import { SecretParams, WriteToJson, Logger } from "utils"
+import { SecretParams, WriteToJson, Logger, Preference } from "utils"
 import { CustomDialog_editTOTPItem } from '../uicomponent/EditTOTPItem';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { Constants } from '../common/Constants';
@@ -59,11 +59,6 @@ struct Index {
           title: '扫码添加',
           action: async () => {
             try {
-              /*this.secret = {
-                issuer: '',
-                secret: 'RUUHXR4GSMMKJ6A4P3J6DKOEVAORGFSZ'
-              }*/
-
               hilog.info(Constants.DOMAIN, TAG, "The ADD button was clicked")
 
               this.secret = await CatchSecretByScan(this.context);
@@ -115,6 +110,7 @@ struct Index {
     issuer: "default"
   };
   private writeToJson = new WriteToJson(this.context.filesDir + Constants.SECRET_FILE_DIR)
+  private preferences = new Preference(this.context, "Preferences")
 
   // The main interface UI Component Controller
   private TitleMenuItem: NavigationMenuItem = {
@@ -148,11 +144,7 @@ struct Index {
         },
 
         confirm: () => {
-          let preferences: Promise<preferences.Preferences> = this.getPreferences(this, "Preferences");
-          preferences.then((result: preferences.Preferences) => {
-            result.put("disclaimerIsConfirm", true);
-            result.flush();
-          });
+          this.preferences.put("disclaimerIsConfirm", true);
         }
       }),
 
@@ -203,40 +195,30 @@ struct Index {
     }
   });
 
-  // INTERNAL FUNCTION
-  private getPreferences(common: Object, fileName: string) {
-    return preferences.getPreferences(getContext(common), fileName);
-  }
-
   // LIFECYCLE
   async onPageShow(): Promise<void> {
     this.onForeground = true;
 
-    // Detect whether the user agrees to the disclaimer
-    this.getPreferences(this, "Preferences").then((preferences: preferences.Preferences) => {
-      preferences.get("disclaimerIsConfirm", false).then((value: preferences.ValueType) => {
-        hilog.debug(Constants.DOMAIN, TAG, "The disclaimerIsConfirm is: %{public}s", value.toString())
+    this.preferences.get("disclaimerIsConfirm", false).then((value) => {
+      hilog.debug(Constants.DOMAIN, TAG, "The disclaimerIsConfirm is: %{public}s", value.toString())
 
-        if (!value) {
-          this.disclaimer.open();
-        }
-      });
+      if (!value) {
+        this.disclaimer.open();
+      }
     });
 
-    this.getPreferences(this, "Preferences").then((preferences: preferences.Preferences) => {
-      preferences.get(Constants.SETTINGS_USERAUTH, false).then((value: preferences.ValueType) => {
-        hilog.debug(Constants.DOMAIN, TAG, "The UserAuth is: %{public}s", value.toString())
+    this.preferences.get(Constants.SETTINGS_USERAUTH, false).then((value: preferences.ValueType) => {
+      hilog.debug(Constants.DOMAIN, TAG, "The UserAuth is: %{public}s", value.toString())
 
-        if (value) {
-          UserAuth().then((result) => {
-            if (result === 12500000) {
-              this.login = true
-            }
-          })
-        } else {
-          this.login = true
-        }
-      });
+      if (value) {
+        UserAuth().then((result) => {
+          if (result === 12500000) {
+            this.login = true
+          }
+        })
+      } else {
+        this.login = true
+      }
     });
 
     // Detect whether to add a key

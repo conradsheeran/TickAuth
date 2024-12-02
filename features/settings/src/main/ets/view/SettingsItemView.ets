@@ -15,11 +15,10 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { bufferToString, Logger } from "utils";
+import { bufferToString, Logger, Preference } from "utils";
 import { Constants } from "../common/Constants";
 import { SettingsItemClass } from "../model/SettingsItemModel"
 import { hilog } from "@kit.PerformanceAnalysisKit";
-import { preferences } from "@kit.ArkData";
 import { router } from "@kit.ArkUI";
 
 const TAG: string = "SettingsItemView";
@@ -80,15 +79,11 @@ struct SettingsItem {
   @Prop settingsItem: SettingsItemClass;
   @State isOn: boolean = false;
 
-  private getPreferences(common: Object, fileName: string) {
-    return preferences.getPreferences(getContext(common), fileName);
-  }
+  private preferences = new Preference(getContext(this), "Preferences")
 
   aboutToAppear(): void {
-    this.getPreferences(this, "Preferences").then((preferences: preferences.Preferences) => {
-      preferences.get(this.settingsItem.title, false).then((value: preferences.ValueType) => {
-        this.isOn = Boolean(value)
-      })
+    this.preferences.get(this.settingsItem.title, false).then((value) => {
+      this.isOn = Boolean(value)
     })
   }
 
@@ -146,17 +141,9 @@ struct SettingsItem {
     Toggle({ type: ToggleType.Switch, isOn: this.isOn })
       .onChange((isOn: boolean) => {
         if (isOn) {
-          let preferences: Promise<preferences.Preferences> = this.getPreferences(this, "Preferences");
-          preferences.then((result: preferences.Preferences) => {
-            result.put(this.settingsItem.title, true);
-            result.flush();
-          });
+          this.preferences.put(this.settingsItem.title, true);
         } else {
-          let preferences: Promise<preferences.Preferences> = this.getPreferences(this, "Preferences");
-          preferences.then((result: preferences.Preferences) => {
-            result.put(this.settingsItem.title, false);
-            result.flush();
-          });
+          this.preferences.put(this.settingsItem.title, false);
         }
       })
       .size({
