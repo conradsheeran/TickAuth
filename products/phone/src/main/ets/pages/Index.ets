@@ -16,7 +16,7 @@
  */
 
 import { common } from '@kit.AbilityKit';
-import { SelectDialog, SymbolGlyphModifier } from '@kit.ArkUI';
+import { promptAction, SelectDialog, SymbolGlyphModifier } from '@kit.ArkUI';
 import { preferences } from '@kit.ArkData';
 import { CustomDialog_disclaimer } from '../uicomponent/Disclaimer'
 import { HomePage, NoKeyInJSON } from "homepage"
@@ -51,7 +51,7 @@ struct Index {
       confirm: {
         value: '取消',
         action: () => {
-          //
+          hilog.debug(Constants.DOMAIN, TAG, "dialogControllerList: CANCEL button has been clicked.")
         },
       },
       radioContent: [
@@ -83,6 +83,10 @@ struct Index {
               this.CustomDialog_editTOTPItemIsClosed = false
               logger.info(Constants.DOMAIN, TAG, "The SECRET(%{public}s) has been added", this.secret.issuer)
             } catch (e) {
+              promptAction.showToast({
+                message: `错误：${e.message} (${TAG})`,
+                duration: 2000
+              });
               logger.error(Constants.DOMAIN, TAG, "ADD button: %{public}s", String(e));
             }
           }
@@ -116,7 +120,7 @@ struct Index {
   private TitleMenuItem: NavigationMenuItem = {
     'value':"",
     'symbolIcon': this.plus,
-    'action': async () => {
+    'action': () => {
       this.dialogControllerList.open()
     }
   };

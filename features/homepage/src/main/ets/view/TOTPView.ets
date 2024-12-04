@@ -96,6 +96,10 @@ export struct TOTP {
     try {
       this.GetSecretFromJson();
     } catch (e) {
+      promptAction.showToast({
+        message: `错误：${e.message} (${TAG})`,
+        duration: 2000
+      });
       logger.error(Constants.DOMAIN, TAG, "GetSecretFromJson fatal: %{public}s", String(e))
     }
 
@@ -194,20 +198,28 @@ export struct TOTP {
     .height($r("app.float.TOTPView_ListItem_Button_size"))
     .margin({ left: 16, right: $r('app.float.TOTPView_ListItem_DeleteButton_margin') })
     .onClick(async () => {
-      if (!this.oldPined.length) {
-        this.preferences.put("PinedAlias", [alias])
-        this.refresh = true
-      } else {
-        if (this.oldPined.some(item => item === alias)) {
-          const index = this.oldPined.indexOf(alias);
-          this.oldPined.splice(index, 1)
-          this.preferences.put("PinedAlias", this.oldPined)
-          this.refresh = true;
+      try {
+        if (!this.oldPined.length) {
+          this.preferences.put("PinedAlias", [alias])
+          this.refresh = true
         } else {
-          let newPined: Array<string> = [...this.oldPined, alias];
-          this.preferences.put("PinedAlias", newPined)
-          this.refresh = true;
+          if (this.oldPined.some(item => item === alias)) {
+            const index = this.oldPined.indexOf(alias);
+            this.oldPined.splice(index, 1)
+            this.preferences.put("PinedAlias", this.oldPined)
+            this.refresh = true;
+          } else {
+            let newPined: Array<string> = [...this.oldPined, alias];
+            this.preferences.put("PinedAlias", newPined)
+            this.refresh = true;
+          }
         }
+      } catch (e) {
+        promptAction.showToast({
+          message: `错误：${e.message} (${TAG})`,
+          duration: 2000
+        });
+        logger.error(Constants.DOMAIN, TAG, "Pined: %{public}s, %{public}d", e.message, e.code)
       }
     })
 
@@ -221,12 +233,20 @@ export struct TOTP {
     .height($r("app.float.TOTPView_ListItem_Button_size"))
     .margin({ left: $r('app.float.TOTPView_ListItem_EditButton_margin'), right: $r('app.float.TOTPView_ListItem_DeleteButton_margin') })
     .onClick(async () => {
-      this.editTOTPItem_secret = item as SecretItem;
-      this.editTOTPItem_Secret.open()
-      while (!this.CustomDialog_editTOTPItem_SecretIsClosed) {
-        await new Promise<void>(resolve => setTimeout(resolve, 100));
+      try {
+        this.editTOTPItem_secret = item as SecretItem;
+        this.editTOTPItem_Secret.open()
+        while (!this.CustomDialog_editTOTPItem_SecretIsClosed) {
+          await new Promise<void>(resolve => setTimeout(resolve, 100));
+        }
+        this.CustomDialog_editTOTPItem_SecretIsClosed = false;
+      } catch (e) {
+        promptAction.showToast({
+          message: `错误：${e.message} (${TAG})`,
+          duration: 2000
+        });
+        logger.error(Constants.DOMAIN, TAG, "editTOTPItem_Secret: %{public}s, %{public}d", e.message, e.code)
       }
-      this.CustomDialog_editTOTPItem_SecretIsClosed = false;
     })
 
     Button({ type: ButtonType.Circle }) {
@@ -239,9 +259,17 @@ export struct TOTP {
     .height($r("app.float.TOTPView_ListItem_Button_size"))
     .margin({ left: $r('app.float.TOTPView_ListItem_DeleteButton_margin') })
     .onClick(() => {
-      this.deleteIndex = index;
-      this.deleteAlias = alias;
-      this.warningDelete.open()
+      try {
+        this.deleteIndex = index;
+        this.deleteAlias = alias;
+        this.warningDelete.open()
+      } catch (e) {
+        promptAction.showToast({
+          message: `错误：${e.message} (${TAG})`,
+          duration: 2000
+        });
+        logger.error(Constants.DOMAIN, TAG, "warningDelete: %{public}s, %{public}d", e.message, e.code)
+      }
     })
   }
 }
@@ -261,6 +289,10 @@ struct TOTPItem {
       this.code = result.code;
       hilog.info(Constants.DOMAIN, TAG, "GenerateTOTP(%{public}s) Succeed", this.totpItem.alias);
     }).catch((e: BusinessError) => {
+      promptAction.showToast({
+        message: `错误：${e.message} (${TAG})`,
+        duration: 2000
+      });
       logger.error(Constants.DOMAIN, TAG, "GenerateTOTP fatal: %{public}s", String(e));
     });
   }
@@ -276,6 +308,10 @@ struct TOTPItem {
         }
       }, 1000)
     } catch (e) {
+      promptAction.showToast({
+        message: `错误：${e.message} (${TAG})`,
+        duration: 2000
+      });
       logger.error(Constants.DOMAIN, TAG, "Get the TOTP time parameter fatal: %{public}s", String(e));
     }
   }
@@ -324,7 +360,7 @@ struct TOTPItem {
 
       promptAction.showToast({
         message: `验证码（${this.totpItem.alias}）已复制`,
-        duration: 1500
+        duration: 2000
       });
     })
   }

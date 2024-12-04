@@ -23,6 +23,7 @@ import { common } from '@kit.AbilityKit';
 import { Constants } from '../common/Constants';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { buffer } from '@kit.ArkTS';
+import { promptAction } from '@kit.ArkUI';
 
 const TAG: string = "ImportAndExport"
 const logger = new Logger(getContext(this))
@@ -64,6 +65,10 @@ struct ImportAndExport {
                 })
               })
             }).catch((e: BusinessError) => {
+              promptAction.showToast({
+                message: `错误：${e.message} (${TAG})`,
+                duration: 2000
+              });
               logger.error(Constants.DOMAIN, TAG, "documentViewPicker.save Fatal: %{public}s code: {public}d", e.message, e.code)
             })
           })
@@ -71,6 +76,12 @@ struct ImportAndExport {
       .margin({ top: $r('app.float.ImportAndExport_Explanation_margin') })
       .width(Constants.IMPORTANDEXPORT_ITEM_WIDTH)
       .fontSize($r('app.float.ImportAndExport_Explanation_fontsize'))
+
+      Text("● 请确保一次性导入的密钥数少于 25 组，若大于 25 组，请分批导入")
+        .fontColor(Color.Gray)
+        .margin({ top: 8 })
+        .width(Constants.IMPORTANDEXPORT_ITEM_WIDTH)
+        .fontSize($r('app.float.ImportAndExport_Explanation_fontsize'))
 
       Row() {
         Button($r('app.string.ImportAndExport_Button_import'))
@@ -92,12 +103,20 @@ struct ImportAndExport {
                     hilog.info(Constants.DOMAIN, TAG, "WriteToJson Succeed")
                   })
                 }).catch((e: BusinessError) => {
+                  promptAction.showToast({
+                    message: `错误：${e.message} (${TAG})`,
+                    duration: 2000
+                  });
                   fs.close(file.fd)
                   logger.error(Constants.DOMAIN, TAG, "Read JSON file fatal: %{public}s", String(e))
                 })
               })
               hilog.info(Constants.DOMAIN, TAG, "WriteToJson Succeed")
             }).catch((e: BusinessError) => {
+              promptAction.showToast({
+                message: `错误：${e.message}(${TAG})`,
+                duration: 2000
+              });
               logger.error(Constants.DOMAIN, TAG, "documentViewPicker.select Fatal: %{public}s code: {public}d", e.message, e.code)
             });
           })
@@ -118,11 +137,19 @@ struct ImportAndExport {
                   fs.close(file.fd)
                   hilog.debug(Constants.DOMAIN, TAG, "copyFile: Export Succeed")
                 }).catch((e: BusinessError) => {
+                  promptAction.showToast({
+                    message: `错误：${e.message} (${TAG})`,
+                    duration: 2000
+                  });
                   fs.close(file.fd)
                   logger.error(Constants.DOMAIN, TAG, "copyFile Fatal: %{public}s code: {public}d", e.message, e.code)
                 });
               })
             }).catch((e: BusinessError) => {
+              promptAction.showToast({
+                message: `错误：${e.message} (${TAG})`,
+                duration: 2000
+              });
               logger.error(Constants.DOMAIN, TAG, "documentViewPicker.save Fatal: %{public}s code: {public}d", e.message, e.code)
             })
           })
@@ -130,6 +157,37 @@ struct ImportAndExport {
       .margin({ top: Constants.IMPORTANDEXPORT_ITEM_MARGIN })
       .width(Constants.IMPORTANDEXPORT_ITEM_WIDTH)
 
+      Button("导出日志文件")
+        .width(Constants.IMPORTANDEXPORT_ITEM_WIDTH)
+        .margin({ top: 12 })
+        .backgroundColor($r('app.color.ImportAndExport_Button_color'))
+        .onClick(() => {
+          const documentSaveOptions = new picker.DocumentSaveOptions();
+          documentSaveOptions.newFileNames = ["log.txt"];
+
+          const documentViewPicker = new picker.DocumentViewPicker(this.context);
+          documentViewPicker.save(documentSaveOptions).then((documentSaveResult: Array<string>) => {
+            fs.open(documentSaveResult[0], fs.OpenMode.READ_WRITE).then((file) => {
+              fs.copyFile(this.context.filesDir + "/log.txt", file.fd).then(() => {
+                fs.close(file.fd)
+                hilog.debug(Constants.DOMAIN, TAG, "copyFile: Export Succeed")
+              }).catch((e: BusinessError) => {
+                promptAction.showToast({
+                  message: `错误：${e.message} (${TAG})`,
+                  duration: 2000
+                });
+                fs.close(file.fd)
+                logger.error(Constants.DOMAIN, TAG, "copyFile Fatal: %{public}s code: {public}d", e.message, e.code)
+              });
+            })
+          }).catch((e: BusinessError) => {
+            promptAction.showToast({
+              message: `错误：${e.message} (${TAG})`,
+              duration: 2000
+            });
+            logger.error(Constants.DOMAIN, TAG, "documentViewPicker.save Fatal: %{public}s code: {public}d", e.message, e.code)
+          })
+        })
     }
     .width(Constants.IMPORTANDEXPORT_SIZE)
     .height(Constants.IMPORTANDEXPORT_SIZE)

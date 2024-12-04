@@ -19,7 +19,7 @@ import { bufferToString, Logger, Preference } from "utils";
 import { Constants } from "../common/Constants";
 import { SettingsItemClass } from "../model/SettingsItemModel"
 import { hilog } from "@kit.PerformanceAnalysisKit";
-import { router } from "@kit.ArkUI";
+import { promptAction, router } from "@kit.ArkUI";
 
 const TAG: string = "SettingsItemView";
 const logger = new Logger(getContext(this))
@@ -56,6 +56,25 @@ export struct SettingsItemView {
                     url: 'pages/ImportAndExport'
                   }, router.RouterMode.Standard, (e) => {
                     if (e) {
+                      promptAction.showToast({
+                        message: `错误：${e.message} (${TAG})`,
+                        duration: 2000
+                      });
+                      logger.error(Constants.DOMAIN, TAG, "router.pushUrl fatal: %{public}s", String(e))
+                    }
+                    hilog.info(Constants.DOMAIN, TAG, "ImportAndExport: pushUrl Succeed")
+                  });
+                }
+
+                if (item.title === "关于") {
+                  router.pushUrl({
+                    url: 'pages/Info'
+                  }, router.RouterMode.Standard, (e) => {
+                    if (e) {
+                      promptAction.showToast({
+                        message: `错误：${e.message} (${TAG})`,
+                        duration: 2000
+                      });
                       logger.error(Constants.DOMAIN, TAG, "router.pushUrl fatal: %{public}s", String(e))
                     }
                     hilog.info(Constants.DOMAIN, TAG, "ImportAndExport: pushUrl Succeed")
@@ -121,7 +140,7 @@ struct SettingsItem {
         top: $r('app.float.SettingsItemView_ListItem_Text_top_margin') })
 
       if (this.settingsItem.title != "身份认证") {
-        if (this.settingsItem.title === "导入和导出") {
+        if (this.settingsItem.title === "导入和导出" || this.settingsItem.title === "关于") {
           this.SwitchPage()
         }
       } else {
