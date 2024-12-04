@@ -45,6 +45,7 @@ export struct TOTP {
   private deleteIndex: number = 0;
   private deleteAlias: string = "";
 
+  // 弹窗控制器
   editTOTPItem_Secret: CustomDialogController = new CustomDialogController({
     builder: CustomDialog_editTOTPItem_Secret(
       {
@@ -92,6 +93,7 @@ export struct TOTP {
     customStyle: true,
   });
 
+  // 生命周期
   async aboutToAppear(): Promise<void> {
     try {
       this.GetSecretFromJson();
@@ -103,6 +105,7 @@ export struct TOTP {
       logger.error(Constants.DOMAIN, TAG, "GetSecretFromJson fatal: %{public}s", String(e))
     }
 
+    // 重置刷新控制器
     this.oldPined = await this.preferences.get("PinedAlias", []) as Array<string>;
     this.refresh = false;
     this.onForeground = false;
@@ -182,6 +185,7 @@ export struct TOTP {
 
   @Builder
   itemEnd(index: number, alias: string, item: SecretClass) {
+    // 置顶按钮
     Button({ type: ButtonType.Circle }) {
       if (this.oldPined.some(item => item === alias)) {
         SymbolGlyph($r('sys.symbol.undo'))
@@ -223,6 +227,7 @@ export struct TOTP {
       }
     })
 
+    // 编辑按钮
     Button({ type: ButtonType.Circle }) {
       SymbolGlyph($r('sys.symbol.square_and_pencil'))
         .fontSize($r('app.float.TOTPView_ListItem_DeleteButton_Symbol_size'))
@@ -249,6 +254,7 @@ export struct TOTP {
       }
     })
 
+    // 删除按钮
     Button({ type: ButtonType.Circle }) {
       SymbolGlyph($r('sys.symbol.trash'))
         .fontSize($r('app.float.TOTPView_ListItem_DeleteButton_Symbol_size'))

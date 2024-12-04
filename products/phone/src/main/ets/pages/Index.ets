@@ -44,6 +44,7 @@ struct Index {
   @State currentIndex: number = 0;
   @State onForeground: boolean = false;
 
+  // 弹窗控制器
   dialogControllerList: CustomDialogController = new CustomDialogController({
     builder: SelectDialog({
       title: '请选择一种添加方式',
@@ -67,7 +68,7 @@ struct Index {
               this.editTOTPItem.open()
               hilog.info(Constants.DOMAIN, TAG, "The editTOTPItem DIALOG opened")
 
-              // Wait for the user to complete the input
+              // 等待用户输入
               while (!this.CustomDialog_editTOTPItemIsClosed) {
                 await new Promise<void>(resolve => setTimeout(resolve, 100));
               }
@@ -78,6 +79,7 @@ struct Index {
               await this.writeToJson.write({ "alias": this.secret.issuer, "secret": this.secret.secret });
               hilog.debug(Constants.DOMAIN, TAG, "WriteToJson completed", this.secret.issuer)
 
+              // 控制页面刷新
               this.hasKey = true;
               this.refresh = true;
               this.CustomDialog_editTOTPItemIsClosed = false
@@ -100,45 +102,6 @@ struct Index {
       ]
     })
   })
-
-  // SYSTEM ICON
-  private plus: SymbolGlyphModifier = new SymbolGlyphModifier($r('sys.symbol.plus'));
-
-  // Add the necessary data needed for the SECRET
-  private context = getContext(this) as common.UIAbilityContext;
-  private secret: SecretParams = {
-    secret: "",
-    algorithm: "SH1",
-    digits: 6,
-    period: 30,
-    issuer: "default"
-  };
-  private writeToJson = new WriteToJson(this.context.filesDir + Constants.SECRET_FILE_DIR)
-  private preferences = new Preference(this.context, "Preferences")
-
-  // The main interface UI Component Controller
-  private TitleMenuItem: NavigationMenuItem = {
-    'value':"",
-    'symbolIcon': this.plus,
-    'action': () => {
-      this.dialogControllerList.open()
-    }
-  };
-
-  private tabsController: TabsController = new TabsController()
-  @Builder tabBuilder(targetIndex: number, selectedImg: Resource, normalImg: Resource, title?: Resource) {
-    Column() {
-      SymbolGlyph(this.currentIndex === targetIndex ? selectedImg : normalImg)
-        .fontSize($r("app.float.Title"))
-
-      /*Text(title)
-        .fontColor(this.currentIndex === targetIndex ? '#1698CE' : '#6B6B6B')
-        .fontSize($r("app.float.content"))*/
-    }
-    .width('100%')
-    .height("100%")
-    .justifyContent(FlexAlign.Center)
-  }
 
   disclaimer: CustomDialogController = new CustomDialogController({
     builder: CustomDialog_disclaimer(
@@ -199,7 +162,47 @@ struct Index {
     }
   });
 
-  // LIFECYCLE
+  // 系统图标
+  private plus: SymbolGlyphModifier = new SymbolGlyphModifier($r('sys.symbol.plus'));
+
+  // 初始化必要数据
+  private context = getContext(this) as common.UIAbilityContext;
+  private secret: SecretParams = {
+    secret: "",
+    algorithm: "SH1",
+    digits: 6,
+    period: 30,
+    issuer: "default"
+  };
+  private writeToJson = new WriteToJson(this.context.filesDir + Constants.SECRET_FILE_DIR)
+  private preferences = new Preference(this.context, "Preferences")
+
+  // 标题栏
+  private TitleMenuItem: NavigationMenuItem = {
+    'value':"",
+    'symbolIcon': this.plus,
+    'action': () => {
+      this.dialogControllerList.open()
+    }
+  };
+
+  // 导航栏
+  private tabsController: TabsController = new TabsController()
+  @Builder tabBuilder(targetIndex: number, selectedImg: Resource, normalImg: Resource, title?: Resource) {
+    Column() {
+      SymbolGlyph(this.currentIndex === targetIndex ? selectedImg : normalImg)
+        .fontSize($r("app.float.Title"))
+
+      /*Text(title)
+        .fontColor(this.currentIndex === targetIndex ? '#1698CE' : '#6B6B6B')
+        .fontSize($r("app.float.content"))*/
+    }
+    .width('100%')
+    .height("100%")
+    .justifyContent(FlexAlign.Center)
+  }
+
+  // 生命周期函数
   async onPageShow(): Promise<void> {
     this.onForeground = true;
 
@@ -225,7 +228,7 @@ struct Index {
       }
     });
 
-    // Detect whether to add a key
+    // 校验 JSON 文件是否存在数据
     try {
       this.hasKey = await this.writeToJson.hasSecret();
     } catch (e) {
