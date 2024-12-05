@@ -1,7 +1,5 @@
 {
   "src": [
-    "pages/Index",
-    "pages/ImportAndExport",
-    "pages/About"
+    "pages/Index"
   ]
 }

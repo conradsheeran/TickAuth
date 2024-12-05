@@ -19,13 +19,14 @@ import { bufferToString, Logger, Preference } from "utils";
 import { Constants } from "../common/Constants";
 import { SettingsItemClass } from "../model/SettingsItemModel"
 import { hilog } from "@kit.PerformanceAnalysisKit";
-import { promptAction, router } from "@kit.ArkUI";
+import { promptAction } from "@kit.ArkUI";
 
 const TAG: string = "SettingsItemView";
 const logger = new Logger(getContext(this))
 
 @Component
 export struct SettingsItemView {
+  @Consume("pathStack") pathStack: NavPathStack;
   @State SettingsItemList: Array<SettingsItemClass> = [];
 
   aboutToAppear(): void {
@@ -52,33 +53,27 @@ export struct SettingsItemView {
             SettingsItem({ settingsItem: item })
               .onClick(() => {
                 if (item.title === "导入和导出") {
-                  router.pushUrl({
-                    url: 'pages/ImportAndExport'
-                  }, router.RouterMode.Standard, (e) => {
-                    if (e) {
-                      promptAction.showToast({
-                        message: `错误：${e.message} (${TAG})`,
-                        duration: 2000
-                      });
-                      logger.error(Constants.DOMAIN, TAG, "router.pushUrl fatal: %{public}s", String(e))
-                    }
-                    hilog.info(Constants.DOMAIN, TAG, "ImportAndExport: pushUrl Succeed")
-                  });
+                  try {
+                    this.pathStack.pushPath({ name: "ImportAndExport" })
+                  } catch (e) {
+                    promptAction.showToast({
+                      message: `错误：${e.message} (${TAG})`,
+                      duration: 2000
+                    });
+                    logger.error(Constants.DOMAIN, TAG, "pushPath(ImportAndExport) Fatal: %{public}s code: {public}d", e.message, e.code)
+                  }
                 }
 
                 if (item.title === "关于") {
-                  router.pushUrl({
-                    url: 'pages/Info'
-                  }, router.RouterMode.Standard, (e) => {
-                    if (e) {
-                      promptAction.showToast({
-                        message: `错误：${e.message} (${TAG})`,
-                        duration: 2000
-                      });
-                      logger.error(Constants.DOMAIN, TAG, "router.pushUrl fatal: %{public}s", String(e))
-                    }
-                    hilog.info(Constants.DOMAIN, TAG, "ImportAndExport: pushUrl Succeed")
-                  });
+                  try {
+                    this.pathStack.pushPath({ name: "About" })
+                  } catch (e) {
+                    promptAction.showToast({
+                      message: `错误：${e.message} (${TAG})`,
+                      duration: 2000
+                    });
+                    logger.error(Constants.DOMAIN, TAG, "pushPath Fatal: %{public}s code: {public}d", e.message, e.code)
+                  }
                 }
               })
           }

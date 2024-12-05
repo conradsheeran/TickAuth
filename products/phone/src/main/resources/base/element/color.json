@@ -19,14 +19,6 @@
     {
       "name": "UserAuthView_button",
       "value": "#4e7ca1"
-    },
-    {
-      "name": "ImportAndExport_explanation_fontcolor",
-      "value": "#FF0A59F7"
-    },
-    {
-      "name": "ImportAndExport_Button_color",
-      "value": "#4e7ca1"
     }
   ]
 }

@@ -39,4 +39,10 @@ export class Constants {
   static readonly NOKEYINJSON_IMAGE_MARGIN: string = "7%";
 
   static readonly ANIMATION_DURING: number = 500;
+
+  static readonly IMPORTANDEXPORT_ITEM_MARGIN: string = "12%";
+
+  static readonly IMPORTANDEXPORT_ITEM_WIDTH: string = "80%";
+
+  static readonly IMPORTANDEXPORT_SIZE: string = "100%";
 }

@@ -1,0 +1,20 @@
+{
+  "routerMap": [
+    {
+      "name": "ImportAndExport",
+      "pageSourceFile": "src/main/ets/view/ImportAndExport.ets",
+      "buildFunction": "ImportAndExportBuilder",
+      "data": {
+        "description": "This is ImportAndExport"
+      }
+    },
+    {
+      "name": "About",
+      "pageSourceFile": "src/main/ets/view/About.ets",
+      "buildFunction": "AboutBuilder",
+      "data": {
+        "description": "This is About"
+      }
+    }
+  ]
+}

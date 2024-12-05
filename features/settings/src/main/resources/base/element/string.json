@@ -3,6 +3,22 @@
     {
       "name": "page_show",
       "value": "page from package"
+    },
+    {
+      "name": "ImportAndExport_explanation_1",
+      "value": "● 请保证导入的密钥文件格式正确："
+    },
+    {
+      "name": "ImportAndExport_explanation_2",
+      "value": "示例文件"
+    },
+    {
+      "name": "ImportAndExport_Button_import",
+      "value": "导入密钥文件"
+    },
+    {
+      "name": "ImportAndExport_Button_export",
+      "value": "导出密钥文件"
     }
   ]
 }

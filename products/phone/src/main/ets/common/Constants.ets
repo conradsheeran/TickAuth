@@ -45,10 +45,4 @@ export class Constants {
   static readonly USERAUTHVIEW_ITEM_MARGIN: string = "50%";
 
   static readonly USERAUTHVIEW_SIZE: string = "100%";
-
-  static readonly IMPORTANDEXPORT_ITEM_MARGIN: string = "12%";
-
-  static readonly IMPORTANDEXPORT_ITEM_WIDTH: string = "80%";
-
-  static readonly IMPORTANDEXPORT_SIZE: string = "100%";
 }

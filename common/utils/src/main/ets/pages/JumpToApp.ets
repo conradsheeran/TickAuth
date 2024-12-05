@@ -17,11 +17,28 @@
 
 import { Want, common } from '@kit.AbilityKit';
 
-export function JumpToApp(context: common.UIAbilityContext, bundleName: string, abilityName: string, uri?: string): void {
-  let want: Want = {
-    bundleName: bundleName,
-    abilityName: abilityName,
-    uri: uri
-  };
-  context.startAbility(want);
+export class JumpToApp {
+  private context: common.UIAbilityContext;
+
+  constructor(context: common.UIAbilityContext) {
+    this.context = context;
+  }
+
+  public app(bundleName: string, abilityName: string, uri?: string) {
+    let want: Want = {
+      bundleName: bundleName,
+      abilityName: abilityName,
+      uri: uri
+    };
+    this.context.startAbility(want);
+  }
+
+  public browser(uriContent: string) {
+    let want: Want = {
+      action: 'ohos.want.action.viewData',
+      entities: ['entity.system.browsable'],
+      uri: uriContent
+    };
+    this.context.startAbility(want)
+  }
 }

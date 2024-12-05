@@ -16,5 +16,3 @@
  */
 
 export { CustomDialog_Warning } from './src/main/ets/pages/Warning'
-
-export { CustomDialog_editTOTPItem } from './src/main/ets/pages/EditTOTPItem'

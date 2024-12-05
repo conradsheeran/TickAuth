@@ -55,22 +55,6 @@
     {
       "name": "UserAuthView_button",
       "value": "Authenticate to enter."
-    },
-    {
-      "name": "ImportAndExport_explanation_1",
-      "value": "● Please ensure that the format of the imported key file is correct."
-    },
-    {
-      "name": "ImportAndExport_explanation_2",
-      "value": "Example "
-    },
-    {
-      "name": "ImportAndExport_Button_import",
-      "value": "Import"
-    },
-    {
-      "name": "ImportAndExport_Button_export",
-      "value": "Export"
     }
   ]
 }

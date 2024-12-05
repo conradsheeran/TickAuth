@@ -36,6 +36,7 @@ const logger = new Logger(getContext(this))
 @Entry
 @Component
 struct Index {
+  @Provide("pathStack") pathStack: NavPathStack = new NavPathStack();;
   @LocalStorageLink("login") login: boolean = false;
   @LocalStorageLink("hasKey") hasKey: boolean = false;
   @LocalStorageLink("refresh") refresh: boolean = false;
@@ -236,8 +237,6 @@ struct Index {
     }
   }
 
-  pageStack: NavPathStack = new NavPathStack();
-
   onPageHide(): void {
     this.onForeground = false;
   }
@@ -252,7 +251,7 @@ struct Index {
 
   @Builder
   Index() {
-    Navigation(this.pageStack) {
+    Navigation(this.pathStack) {
       Tabs({ barPosition: BarPosition.End, index: this.currentIndex, controller: this.tabsController }) {
         TabContent() {
           if (this.hasKey) {
