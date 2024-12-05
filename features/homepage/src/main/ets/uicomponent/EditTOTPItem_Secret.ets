@@ -28,7 +28,7 @@ export struct CustomDialog_editTOTPItem_Secret {
   @LocalStorageLink("refresh") refresh: boolean = false;
   @State newItem: SecretItem = { alias: this.oldItem.alias, secret: this.oldItem.secret };
 
-  controller: CustomDialogController = new CustomDialogController({builder: ""});
+  controller: CustomDialogController = new CustomDialogController({ builder: "" });
   cancel: Function = () => {};
   confirm: Function = () => {};
 

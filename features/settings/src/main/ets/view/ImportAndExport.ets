@@ -23,7 +23,7 @@ import { common } from '@kit.AbilityKit';
 import { Constants } from 'homepage/src/main/ets/common/Constants';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { buffer } from '@kit.ArkTS';
-import { promptAction } from '@kit.ArkUI';
+import { promptAction, router } from '@kit.ArkUI';
 
 const TAG: string = "ImportAndExport"
 const logger = new Logger(getContext(this))
@@ -99,7 +99,18 @@ struct ImportAndExport {
                   fs.read(file.fd, arrayBuffer).then((readLen) => {
                     let buf = buffer.from(arrayBuffer, 0, readLen);
                     this.writeToJson.append(bufferToString(new Uint8Array(buf.buffer)).replace(/[\u0000-\u001F\u007F-\u009F]/g, "").trim()).then(() => {
-                      this.refresh = true;
+                      router.pushUrl({
+                        url: 'pages/Index'
+                      }, router.RouterMode.Standard, (e) => {
+                        if (e) {
+                          promptAction.showToast({
+                            message: `错误：${e.message} (${TAG})`,
+                            duration: 2000
+                          });
+                          logger.error(Constants.DOMAIN, TAG, "router.pushUrl: %{public}s, %{public}d", e.message, e.code)
+                          return;
+                        }
+                      });
                       fs.close(file.fd)
                       hilog.info(Constants.DOMAIN, TAG, "WriteToJson Succeed")
                     })
