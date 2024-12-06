@@ -26,6 +26,7 @@ import { hilog } from "@kit.PerformanceAnalysisKit";
 import { promptAction } from "@kit.ArkUI";
 import { CustomDialog_editTOTPItem_Secret } from "../uicomponent/EditTOTPItem_Secret";
 import { CustomDialog_Warning } from "uicomponent"
+import { preferences } from "@kit.ArkData";
 
 const TAG: string = "TOTPView";
 const logger = new Logger(getContext(this))
@@ -124,6 +125,14 @@ export struct TOTP {
       this.TOTPList = JSON.parse(bufferToString(new Uint8Array(buf.buffer)).replace(/[\u0000-\u001F\u007F-\u009F]/g, "").trim()) as SecretClass[];
       fs.close(fd);
 
+      this.preferences.get("按字母排序", true).then((value: preferences.ValueType) => {
+        if (value) {
+          this.TOTPList.sort((a, b) => {
+            return a.alias.localeCompare(b.alias);
+          })
+        }
+      })
+
       this.preferences.has("PinedAlias").then(async (has: boolean) => {
         if (has) {
           let pinedItems = await this.preferences.get("PinedAlias", []) as Array<string>;
@@ -132,9 +141,7 @@ export struct TOTP {
             const aIndex = pinedItems.indexOf(a.alias);
             const bIndex = pinedItems.indexOf(b.alias);
 
-            if (aIndex === -1 && bIndex === -1) {
-              return a.alias.localeCompare(b.alias); //todo: 不在 pinedItems 中时按字母顺序排序，考虑作为一个设置选项
-            } else if (aIndex === -1) {
+            if (aIndex === -1) {
               return 1;
             } else if (bIndex === -1) {
               return -1;

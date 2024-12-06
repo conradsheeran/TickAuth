@@ -96,9 +96,15 @@ struct SettingsItem {
   private preferences = new Preference(getContext(this), "Preferences")
 
   aboutToAppear(): void {
-    this.preferences.get(this.settingsItem.title, false).then((value) => {
-      this.isOn = Boolean(value)
-    })
+    if (this.settingsItem.title === "按字母排序") {
+      this.preferences.get(this.settingsItem.title, true).then((value) => {
+        this.isOn = Boolean(value)
+      })
+    } else {
+      this.preferences.get(this.settingsItem.title, false).then((value) => {
+        this.isOn = Boolean(value)
+      })
+    }
   }
 
   build() {
@@ -134,7 +140,7 @@ struct SettingsItem {
       .margin({ left: $r('app.float.SettingsItemView_ListItem_Text_left_margin'),
         top: $r('app.float.SettingsItemView_ListItem_Text_top_margin') })
 
-      if (this.settingsItem.title != "身份认证") {
+      if (this.settingsItem.title !== "身份认证" && this.settingsItem.title !== "按字母排序") {
         if (this.settingsItem.title === "导入和导出" || this.settingsItem.title === "关于") {
           this.SwitchPage()
         }

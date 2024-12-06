@@ -5,6 +5,11 @@
     "content": "开启后，进入应用前进行身份认证"
   },
   {
+    "symbol": "sys.symbol.list_letter",
+    "title": "按字母排序",
+    "content": "开启后，验证码将按照名称首字母排序"
+  },
+  {
     "symbol": "sys.symbol.share",
     "title": "导入和导出",
     "content": "对密钥、日志进行导入和导出"
