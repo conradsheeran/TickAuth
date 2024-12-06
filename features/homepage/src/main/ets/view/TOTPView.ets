@@ -54,6 +54,7 @@ export struct TOTP {
         },
 
         confirm: () => {
+          this.refresh = true;
           this.CustomDialog_editTOTPItem_SecretIsClosed = true
         },
 

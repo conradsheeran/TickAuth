@@ -25,7 +25,6 @@ const logger = new Logger(getContext(this))
 @CustomDialog
 export struct CustomDialog_editTOTPItem_Secret {
   @Prop oldItem: SecretItem;
-  @LocalStorageLink("refresh") refresh: boolean = false;
   @State newItem: SecretItem = { alias: this.oldItem.alias, secret: this.oldItem.secret };
 
   controller: CustomDialogController = new CustomDialogController({ builder: "" });
@@ -84,8 +83,6 @@ export struct CustomDialog_editTOTPItem_Secret {
                 .edit(this.oldItem, this.newItem);
               logger.info(Constants.DOMAIN, TAG, "The Confirm button was clicked")
             }
-
-            this.refresh = true
           })
           .backgroundColor($r('sys.color.comp_background_tertiary'))
           .fontColor($r("sys.color.brand_font"))
