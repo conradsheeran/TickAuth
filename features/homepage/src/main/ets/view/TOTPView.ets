@@ -125,7 +125,7 @@ export struct TOTP {
       this.TOTPList = JSON.parse(bufferToString(new Uint8Array(buf.buffer)).replace(/[\u0000-\u001F\u007F-\u009F]/g, "").trim()) as SecretClass[];
       fs.close(fd);
 
-      this.preferences.get("按字母排序", true).then((value: preferences.ValueType) => {
+      this.preferences.get("按字母排序", false).then((value: preferences.ValueType) => {
         if (value) {
           this.TOTPList.sort((a, b) => {
             return a.alias.localeCompare(b.alias);

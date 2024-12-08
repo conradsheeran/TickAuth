@@ -96,15 +96,9 @@ struct SettingsItem {
   private preferences = new Preference(getContext(this), "Preferences")
 
   aboutToAppear(): void {
-    if (this.settingsItem.title === "按字母排序") {
-      this.preferences.get(this.settingsItem.title, true).then((value) => {
-        this.isOn = Boolean(value)
-      })
-    } else {
-      this.preferences.get(this.settingsItem.title, false).then((value) => {
-        this.isOn = Boolean(value)
-      })
-    }
+    this.preferences.get(this.settingsItem.title, false).then((value) => {
+      this.isOn = Boolean(value)
+    })
   }
 
   build() {
@@ -162,8 +156,16 @@ struct SettingsItem {
       .onChange((isOn: boolean) => {
         if (isOn) {
           this.preferences.put(this.settingsItem.title, true);
+          promptAction.showToast({
+            message: "请重启应用以开启该功能",
+            duration: 2500
+          });
         } else {
           this.preferences.put(this.settingsItem.title, false);
+          promptAction.showToast({
+            message: "请重启应用以关闭该功能",
+            duration: 2500
+          });
         }
       })
       .size({
