@@ -2,6 +2,21 @@
   {
     "symbol": "sys.symbol.person_shield",
     "title": "身份认证",
-    "content": "开启后，进入应用前要进行身份认证"
+    "content": "开启后，进入应用前进行身份认证"
+  },
+  {
+    "symbol": "sys.symbol.list_letter",
+    "title": "按字母排序",
+    "content": "开启后，验证码将按照名称首字母排序"
+  },
+  {
+    "symbol": "sys.symbol.share",
+    "title": "导入和导出",
+    "content": "对密钥、日志进行导入和导出"
+  },
+  {
+    "symbol": "sys.symbol.info_circle",
+    "title": "关于",
+    "content": "提供意见、反馈问题或需要帮助"
   }
 ]

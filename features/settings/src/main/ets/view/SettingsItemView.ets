@@ -1,14 +1,32 @@
-import { bufferToString, Logger } from "utils";
+/*
+ * Copyright (c) 2024 Yang He
+ *
+ * TickAuth is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+import { bufferToString, Logger, Preference } from "utils";
 import { Constants } from "../common/Constants";
 import { SettingsItemClass } from "../model/SettingsItemModel"
 import { hilog } from "@kit.PerformanceAnalysisKit";
-import { preferences } from "@kit.ArkData";
+import { promptAction } from "@kit.ArkUI";
 
 const TAG: string = "SettingsItemView";
 const logger = new Logger(getContext(this))
 
 @Component
 export struct SettingsItemView {
+  @Consume("pathStack") pathStack: NavPathStack;
   @State SettingsItemList: Array<SettingsItemClass> = [];
 
   aboutToAppear(): void {
@@ -33,6 +51,31 @@ export struct SettingsItemView {
         ForEach(this.SettingsItemList, (item: SettingsItemClass) => {
           ListItem() {
             SettingsItem({ settingsItem: item })
+              .onClick(() => {
+                if (item.title === "导入和导出") {
+                  try {
+                    this.pathStack.pushPath({ name: "ImportAndExport" })
+                  } catch (e) {
+                    promptAction.showToast({
+                      message: `错误：${e.message} (${TAG})`,
+                      duration: 2000
+                    });
+                    logger.error(Constants.DOMAIN, TAG, "pushPath(ImportAndExport) Fatal: %{public}s code: {public}d", e.message, e.code)
+                  }
+                }
+
+                if (item.title === "关于") {
+                  try {
+                    this.pathStack.pushPath({ name: "About" })
+                  } catch (e) {
+                    promptAction.showToast({
+                      message: `错误：${e.message} (${TAG})`,
+                      duration: 2000
+                    });
+                    logger.error(Constants.DOMAIN, TAG, "pushPath Fatal: %{public}s code: {public}d", e.message, e.code)
+                  }
+                }
+              })
           }
         }, (item: SettingsItemClass) => item.title)
       }
@@ -49,17 +92,20 @@ export struct SettingsItemView {
 struct SettingsItem {
   @Prop settingsItem: SettingsItemClass;
   @State isOn: boolean = false;
+  @State isClick: boolean = false;
 
-  private getPreferences(common: Object, fileName: string) {
-    return preferences.getPreferences(getContext(common), fileName);
-  }
+  private preferences = new Preference(getContext(this), "Preferences")
 
   aboutToAppear(): void {
-    this.getPreferences(this, "Preferences").then((preferences: preferences.Preferences) => {
-      preferences.get(this.settingsItem.title, false).then((value: preferences.ValueType) => {
+    if (this.settingsItem.title === "按字母排序") {
+      this.preferences.get(this.settingsItem.title, true).then((value) => {
         this.isOn = Boolean(value)
       })
-    })
+    } else {
+      this.preferences.get(this.settingsItem.title, false).then((value) => {
+        this.isOn = Boolean(value)
+      })
+    }
   }
 
   build() {
@@ -95,30 +141,13 @@ struct SettingsItem {
       .margin({ left: $r('app.float.SettingsItemView_ListItem_Text_left_margin'),
         top: $r('app.float.SettingsItemView_ListItem_Text_top_margin') })
 
-      Toggle({ type: ToggleType.Switch, isOn: this.isOn })
-        .onChange((isOn: boolean) => {
-          if(isOn) {
-            let preferences: Promise<preferences.Preferences> = this.getPreferences(this, "Preferences");
-            preferences.then((result: preferences.Preferences) => {
-              result.put(this.settingsItem.title, true);
-              result.flush();
-            });
-          } else {
-            let preferences: Promise<preferences.Preferences> = this.getPreferences(this, "Preferences");
-            preferences.then((result: preferences.Preferences) => {
-              result.put(this.settingsItem.title, false);
-              result.flush();
-            });
-          }
+      if (this.settingsItem.title !== "身份认证" && this.settingsItem.title !== "按字母排序") {
+        if (this.settingsItem.title === "导入和导出" || this.settingsItem.title === "关于") {
+          this.SwitchPage()
         }
-        )
-        .size({
-          "width": $r('app.float.SettingsItemView_ListItem_Toggle_width'),
-          "height": $r('app.float.SettingsItemView_ListItem_Toggle_height')
-        })
-        .selectedColor($r('app.color.toggleBackground'))
-        .margin({ right: $r('app.float.SettingsItemView_ListItem_Toggle_margin') })
-        .alignSelf(ItemAlign.Center)
+      } else {
+        this.Toggle()
+      }
     }
     .width(Constants.SETTINGSITEMVIEW_LISTITEM_WIDTH)
     .height(Constants.SETTINGSITEMVIEW_LISTITEM_HEIGHT)
@@ -126,5 +155,51 @@ struct SettingsItem {
     .backgroundColor(Color.White)
     .padding($r('app.float.SettingsItemView_ListItem_padding'))
     .alignItems(VerticalAlign.Top)
+  }
+
+  @Builder
+  Toggle() {
+    Toggle({ type: ToggleType.Switch, isOn: this.isOn })
+      .onClick(() => {
+        this.isClick = true
+      })
+      .onChange((isOn: boolean) => {
+        if (isOn) {
+          this.preferences.put(this.settingsItem.title, true);
+          if (this.isClick) {
+            promptAction.showToast({
+              message: "请重启应用以开启该功能",
+              duration: 2500
+            });
+          }
+        } else {
+          this.preferences.put(this.settingsItem.title, false);
+          if (this.isClick) {
+            promptAction.showToast({
+              message: "请重启应用以关闭该功能",
+              duration: 2500
+            });
+          }
+        }
+      })
+      .size({
+        "width": $r('app.float.SettingsItemView_ListItem_Toggle_width'),
+        "height": $r('app.float.SettingsItemView_ListItem_Toggle_height')
+      })
+      .selectedColor($r('app.color.toggleBackground'))
+      .margin({ right: $r('app.float.SettingsItemView_ListItem_Toggle_margin') })
+      .alignSelf(ItemAlign.Center)
+  }
+
+  @Builder
+  SwitchPage() {
+    Blank()
+
+    SymbolGlyph($r('sys.symbol.chevron_right'))
+      .fontSize(30)
+      .fontWeight(FontWeight.Normal)
+      .fontColor([Color.Gray])
+      .margin({ right: 14 })
+      .alignSelf(ItemAlign.Center)
   }
 }

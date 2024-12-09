@@ -1,9 +1,27 @@
+/*
+ * Copyright (c) 2024 Yang He
+ *
+ * TickAuth is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 import { Constants } from "../common/Constants";
-import { CustomDialog_editTOTPItem } from "../uicomponent/EditTOTPItem";
 import { hilog } from "@kit.PerformanceAnalysisKit";
 import { CatchSecretByScan } from "../model/CatchSecretByScan";
-import { Logger, SecretParams, WriteToJson } from "utils";
+import { Logger, WriteToJson } from "utils";
+import { CustomDialog_editSecret } from "uicomponent"
 import { common } from "@kit.AbilityKit";
+import { promptAction, SelectDialog } from "@kit.ArkUI";
 
 const TAG: string = "NoKeyInJSON"
 const logger = new Logger(getContext(this))
@@ -11,57 +29,30 @@ const logger = new Logger(getContext(this))
 @Component
 export struct NoKeyInJSON {
   @State alias: string = "default";
+  @State secret: string = "";
   @Link hasKey: boolean;
   @State CustomDialog_editTOTPItemIsClosed: boolean = false;
 
-  private context = getContext(this) as common.UIAbilityContext;
-  private secretFileDir: string = this.context.filesDir + Constants.SECRET_FILE_DIR;
-  private secret: SecretParams = {
-    secret: "",
-    algorithm: "SH1",
-    digits: 6,
-    period: 30,
-    issuer: "default"
-  };
-
-  editTOTPItem: CustomDialogController = new CustomDialogController({
-    builder: CustomDialog_editTOTPItem(
-      {
-        cancel: () => {
-          this.CustomDialog_editTOTPItemIsClosed = true
+  dialogControllerList: CustomDialogController = new CustomDialogController({
+    builder: SelectDialog({
+      title: '请选择一种添加方式',
+      selectedIndex: 2,
+      confirm: {
+        value: '取消',
+        action: () => {
+          hilog.debug(Constants.DOMAIN, TAG, "dialogControllerList: CANCEL button has been clicked.")
         },
-
-        confirm: () => {
-          this.CustomDialog_editTOTPItemIsClosed = true
-        },
-
-        alias: $alias
-      }),
-
-    customStyle: true,
-
-    onWillDismiss:(dismissDialogAction: DismissDialogAction)=> {
-      hilog.debug(Constants.DOMAIN, TAG, "editTOTPItem: User try to exit. Action: %{public}s", dismissDialogAction.reason.toString())
-    }
-  });
-
-  build() {
-    Row() {
-      Column() {
-        Image($r('app.media.plus_square'))
-          .size({ height: $r('app.float.NoKeyInJSON_Image_size'), width: $r('app.float.NoKeyInJSON_Image_size') })
-          .margin({ bottom: Constants.NOKEYINJSON_IMAGE_MARGIN })
-          .onClick(async () => {
+      },
+      radioContent: [
+        {
+          title: '扫码添加',
+          action: async () => {
             try {
-              /*this.secret = {
-                issuer: '',
-                secret: 'RUUHXR4GSMMKJ6A4P3J6DKOEVAORGFSZ'
-              }*/
-
               hilog.info(Constants.DOMAIN, TAG, "The ADD button was clicked")
 
-              this.secret = await CatchSecretByScan(this.context);
-              hilog.info(Constants.DOMAIN, TAG, "The SECRET accepted: %{private}s", String(this.secret.issuer))
+              const secretParam = await CatchSecretByScan(this.context);
+              this.secret = secretParam.secret
+              hilog.info(Constants.DOMAIN, TAG, "The SECRET accepted: %{private}s", String(this.alias))
 
               this.editTOTPItem.open()
               hilog.info(Constants.DOMAIN, TAG, "The editTOTPItem DIALOG opened")
@@ -71,18 +62,105 @@ export struct NoKeyInJSON {
                 await new Promise<void>(resolve => setTimeout(resolve, 100));
               }
 
-              this.secret.issuer = this.alias;
-              hilog.debug(Constants.DOMAIN, TAG, "The edited alias is %{public}s", this.secret.issuer)
+              hilog.debug(Constants.DOMAIN, TAG, "The edited alias is %{public}s", this.alias)
 
-              await WriteToJson(this.secretFileDir, { "alias": this.secret.issuer, "secret": this.secret.secret });
-              hilog.debug(Constants.DOMAIN, TAG, "WriteToJson completed", this.secret.issuer)
+              await this.writeToJson.write({ "alias": this.alias, "secret": this.secret });
+              hilog.debug(Constants.DOMAIN, TAG, "WriteToJson completed", this.alias)
 
               this.hasKey = true;
               this.CustomDialog_editTOTPItemIsClosed = false
-              logger.info(Constants.DOMAIN, TAG, "The SECRET(%{public}s) has been added", this.secret.issuer)
+              logger.info(Constants.DOMAIN, TAG, "The SECRET(%{public}s) has been added", this.alias)
             } catch (e) {
+              promptAction.showToast({
+                message: `错误：${e.message} (${TAG})`,
+                duration: 2000
+              });
               logger.error(Constants.DOMAIN, TAG, "ADD button: %{public}s", String(e));
             }
+          }
+        },
+        {
+          title: '手动输入 TOTP 验证码参数',
+          action: () => {
+            this.newTOTPItem.open()
+          }
+        }
+      ]
+    })
+  })
+
+  newTOTPItem: CustomDialogController = new CustomDialogController({
+    builder: CustomDialog_editSecret(
+      {
+        cancel: () => {
+          this.hasKey = false;
+        },
+
+        confirm: () => {
+          this.writeToJson.write({ alias: this.alias, secret: this.secret })
+          this.hasKey = true
+        },
+
+        symbol: $r('sys.symbol.plus_square_on_square'),
+        symbolColor: $r('sys.color.font_primary'),
+        title: "请输入 TOTP 验证码参数",
+        content: "请输入您的账户别名",
+        retryContent: "请勿使用相同的账户别名",
+        confirmButtonFontColor: $r("sys.color.warning"),
+        cancelButtonFontColor: $r("sys.color.brand_font"),
+        mode: "new",
+
+        contentSecret: "请输入您的的密钥",
+
+        alias: $alias,
+        secret: $secret
+      }),
+
+    customStyle: true,
+
+    onWillDismiss:(dismissDialogAction: DismissDialogAction)=> {
+      hilog.debug(Constants.DOMAIN, TAG, "editTOTPItem: User try to exit. Action: %{public}s", dismissDialogAction.reason.toString())
+    }
+  });
+
+  private context = getContext(this) as common.UIAbilityContext;
+  private writeToJson = new WriteToJson(this.context.filesDir + Constants.SECRET_FILE_DIR)
+
+  editTOTPItem: CustomDialogController = new CustomDialogController({
+    builder: CustomDialog_editSecret(
+      {
+        cancel: () => {
+          this.CustomDialog_editTOTPItemIsClosed = true
+        },
+
+        confirm: () => {
+          this.CustomDialog_editTOTPItemIsClosed = true
+        },
+
+        symbol: $r('sys.symbol.square_and_pencil'),
+        symbolColor: $r('sys.color.font_primary'),
+        title: "请输入您的账户别名",
+        content: "该别名将用于为您区分不同的验证码",
+        retryContent: "请勿使用相同的账户别名",
+        confirmButtonFontColor: $r("sys.color.warning"),
+        cancelButtonFontColor: $r("sys.color.brand_font"),
+        mode: "edit",
+
+        alias: $alias,
+        secret: $secret
+      }),
+
+    customStyle: true,
+  });
+
+  build() {
+    Row() {
+      Column() {
+        Image($r('app.media.plus_square'))
+          .size({ height: $r('app.float.NoKeyInJSON_Image_size'), width: $r('app.float.NoKeyInJSON_Image_size') })
+          .margin({ bottom: Constants.NOKEYINJSON_IMAGE_MARGIN })
+          .onClick(() => {
+            this.dialogControllerList.open()
           })
 
         Text($r('app.string.NoKeyInJSON_content'))

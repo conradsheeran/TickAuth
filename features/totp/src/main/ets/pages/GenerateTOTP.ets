@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2024 Yang He
+ *
+ * TickAuth is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 import { buffer } from '@kit.ArkTS';
 import { Base32, Logger } from "utils";
 import { GenerateHMAC } from "./GenerateHMAC";
@@ -6,7 +23,6 @@ import { Constants } from '../common/Constants';
 
 const TAG: string = "GenerateTOTP"
 const logger = new Logger(getContext(this))
-const base32 = new Base32();
 
 function leftPad(str: string, len: number, padChar: string): string {
   return str.length >= len ? str : padChar.repeat(len - str.length) + str;
@@ -25,16 +41,14 @@ export async function GenerateTOTP(
   algorithm: string = "SHA1",
   epoch: number = Math.floor(Date.now() / 1000),
 ) {
-  const key = buffer.from(base32.base32ToHex(secret), 'hex');
-  const keyString = key.toString('hex');
+  const key = Base32.decodeToBase32(secret);
   const timeCounter = Math.floor(epoch / timeStep);
   const counterBuffer = buffer.alloc(8);
   counterBuffer.writeUInt32BE(0, 0);
   counterBuffer.writeUInt32BE(timeCounter, 4);
-  const counterBufferString = counterBuffer.toString('hex');
 
   try {
-    const HMAC = await GenerateHMAC(keyString, algorithm, counterBufferString);
+    const HMAC = buffer.from(await GenerateHMAC(key.buffer, counterBuffer.buffer, algorithm));
 
     const offset = HMAC[HMAC.length - 1] & 0x0f;
     const binaryCode =

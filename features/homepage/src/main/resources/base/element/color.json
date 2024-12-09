@@ -19,6 +19,10 @@
     {
       "name": "TOTPView_ListItem_Progress_end",
       "value": "#93b5cf"
+    },
+    {
+      "name": "TOTPView_ListItem_editButton",
+      "value": "#4e7ca1"
     }
   ]
 }

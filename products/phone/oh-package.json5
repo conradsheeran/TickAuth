@@ -9,6 +9,7 @@
     "utils": "file:../../common/utils",
     "totp": "file:../../features/totp",
     "homepage": "file:../../features/homepage",
-    "settings": "file:../../features/settings"
+    "settings": "file:../../features/settings",
+    "uicomponent": "file:../../common/uicomponent"
   }
 }
