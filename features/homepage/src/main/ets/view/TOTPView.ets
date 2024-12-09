@@ -24,8 +24,7 @@ import { GenerateTOTP, GetTOTPTimeInfo } from "totp"
 import { Constants } from "../common/Constants";
 import { hilog } from "@kit.PerformanceAnalysisKit";
 import { promptAction } from "@kit.ArkUI";
-import { CustomDialog_editTOTPItem_Secret } from "../uicomponent/EditTOTPItem_Secret";
-import { CustomDialog_Warning } from "uicomponent"
+import { CustomDialog_editSecret, CustomDialog_Warning } from "uicomponent"
 import { preferences } from "@kit.ArkData";
 
 const TAG: string = "TOTPView";
@@ -37,8 +36,10 @@ export struct TOTP {
   @Link refresh: boolean;
   @Link onForeground: boolean;
   @State TOTPList: Array<SecretClass> = [];
-  @State CustomDialog_editTOTPItem_SecretIsClosed: boolean = false;
-  @State editTOTPItem_secret: SecretItem = { alias: "", secret: "" };
+  @State CustomDialog_editTOTPItem_IsClosed: boolean = false;
+  @State editTOTPItem_alias: string = '';
+  @State editTOTPItem_secret: string = '';
+  @State editTOTPItem_item: SecretItem = { alias: "", secret: "" }
 
   private writeToJson = new WriteToJson(getContext(this).filesDir + Constants.SECRET_FILE_DIR)
   private preferences = new Preference(getContext(this), "Preferences");
@@ -47,19 +48,30 @@ export struct TOTP {
   private deleteAlias: string = "";
 
   // 弹窗控制器
-  editTOTPItem_Secret: CustomDialogController = new CustomDialogController({
-    builder: CustomDialog_editTOTPItem_Secret(
+  editTOTPItem: CustomDialogController = new CustomDialogController({
+    builder: CustomDialog_editSecret(
       {
         cancel: () => {
-          this.CustomDialog_editTOTPItem_SecretIsClosed = true
+          this.CustomDialog_editTOTPItem_IsClosed = true
         },
 
         confirm: () => {
+          this.writeToJson.edit(this.editTOTPItem_item, { alias: this.editTOTPItem_alias, secret: this.editTOTPItem_item.secret })
           this.refresh = true;
-          this.CustomDialog_editTOTPItem_SecretIsClosed = true
+          this.CustomDialog_editTOTPItem_IsClosed = true
         },
 
-        oldItem: this.editTOTPItem_secret
+        symbol: $r('sys.symbol.square_and_pencil'),
+        symbolColor: $r('sys.color.font_primary'),
+        title: "请输入修改后账户别名",
+        content: "该别名将用于为您区分不同的验证码",
+        retryContent: "请勿使用相同的账户别名",
+        confirmButtonFontColor: $r("sys.color.warning"),
+        cancelButtonFontColor: $r("sys.color.brand_font"),
+        mode: "edit",
+
+        alias: $editTOTPItem_alias,
+        secret: $editTOTPItem_secret
       }),
 
     customStyle: true,
@@ -125,7 +137,7 @@ export struct TOTP {
       this.TOTPList = JSON.parse(bufferToString(new Uint8Array(buf.buffer)).replace(/[\u0000-\u001F\u007F-\u009F]/g, "").trim()) as SecretClass[];
       fs.close(fd);
 
-      this.preferences.get("按字母排序", false).then((value: preferences.ValueType) => {
+      this.preferences.get("按字母排序", true).then((value: preferences.ValueType) => {
         if (value) {
           this.TOTPList.sort((a, b) => {
             return a.alias.localeCompare(b.alias);
@@ -247,12 +259,14 @@ export struct TOTP {
     .margin({ left: $r('app.float.TOTPView_ListItem_EditButton_margin'), right: $r('app.float.TOTPView_ListItem_DeleteButton_margin') })
     .onClick(async () => {
       try {
-        this.editTOTPItem_secret = item as SecretItem;
-        this.editTOTPItem_Secret.open()
-        while (!this.CustomDialog_editTOTPItem_SecretIsClosed) {
+        this.editTOTPItem_item = item as SecretItem;
+        this.editTOTPItem_alias = item.alias;
+        this.editTOTPItem_secret = item.secret;
+        this.editTOTPItem.open()
+        while (!this.CustomDialog_editTOTPItem_IsClosed) {
           await new Promise<void>(resolve => setTimeout(resolve, 100));
         }
-        this.CustomDialog_editTOTPItem_SecretIsClosed = false;
+        this.CustomDialog_editTOTPItem_IsClosed = false;
       } catch (e) {
         promptAction.showToast({
           message: `错误：${e.message} (${TAG})`,

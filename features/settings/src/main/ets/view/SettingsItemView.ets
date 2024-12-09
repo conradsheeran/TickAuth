@@ -92,13 +92,20 @@ export struct SettingsItemView {
 struct SettingsItem {
   @Prop settingsItem: SettingsItemClass;
   @State isOn: boolean = false;
+  @State isClick: boolean = false;
 
   private preferences = new Preference(getContext(this), "Preferences")
 
   aboutToAppear(): void {
-    this.preferences.get(this.settingsItem.title, false).then((value) => {
-      this.isOn = Boolean(value)
-    })
+    if (this.settingsItem.title === "按字母排序") {
+      this.preferences.get(this.settingsItem.title, true).then((value) => {
+        this.isOn = Boolean(value)
+      })
+    } else {
+      this.preferences.get(this.settingsItem.title, false).then((value) => {
+        this.isOn = Boolean(value)
+      })
+    }
   }
 
   build() {
@@ -153,19 +160,26 @@ struct SettingsItem {
   @Builder
   Toggle() {
     Toggle({ type: ToggleType.Switch, isOn: this.isOn })
+      .onClick(() => {
+        this.isClick = true
+      })
       .onChange((isOn: boolean) => {
         if (isOn) {
           this.preferences.put(this.settingsItem.title, true);
-          promptAction.showToast({
-            message: "请重启应用以开启该功能",
-            duration: 2500
-          });
+          if (this.isClick) {
+            promptAction.showToast({
+              message: "请重启应用以开启该功能",
+              duration: 2500
+            });
+          }
         } else {
           this.preferences.put(this.settingsItem.title, false);
-          promptAction.showToast({
-            message: "请重启应用以关闭该功能",
-            duration: 2500
-          });
+          if (this.isClick) {
+            promptAction.showToast({
+              message: "请重启应用以关闭该功能",
+              duration: 2500
+            });
+          }
         }
       })
       .size({

@@ -23,7 +23,7 @@ const TAG: string = "CustomDialog_Warning";
 
 @CustomDialog
 export struct CustomDialog_Warning {
-  controller: CustomDialogController = new CustomDialogController({builder: ""});
+  controller: CustomDialogController = new CustomDialogController({ builder: "" });
   cancel: Function = () => {};
   confirm: Function = () => {};
 
@@ -47,7 +47,6 @@ export struct CustomDialog_Warning {
         Span(this.title)
       }
         .fontSize($r('app.float.CustomDialog_Warning_Title_fontsize'))
-        .fontWeight(FontWeight.Bold)
         .textAlign(TextAlign.Start)
         .margin({top: Constants.CUSTOMDIALOG_WARNING_TITLE_MARGIN})
         .width(Constants.CUSTOMDIALOG_WARNING_TEXT_WIDTH)

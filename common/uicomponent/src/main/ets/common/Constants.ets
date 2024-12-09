@@ -28,7 +28,7 @@ export class Constants {
 
   static readonly CUSTOMDIALOG_WARNING_WIDTH: string = '96%';
 
-  static readonly CUSTOMDIALOG_WARNING_HEIGHT: string = '30%';
+  static readonly CUSTOMDIALOG_WARNING_HEIGHT: string = '28%';
 
   static readonly CUSTOMDIALOG_WARNING_BUTTON_TOTAL_MARGIN: string = '8%';
 }

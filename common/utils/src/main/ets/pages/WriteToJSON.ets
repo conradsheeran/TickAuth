@@ -214,5 +214,27 @@ export class WriteToJson {
       return false;
     }
   }
+
+  async isExist(alias: string): Promise<boolean> {
+    hilog.info(Constants.DOMAIN, TAG, "isExist mode start");
+
+    try {
+      const fileExists = await fs.access(this.filePath);
+
+      if (fileExists) {
+        const dataArray = await this.readJsonFile();
+        const exists = dataArray.some((item) => item.alias === alias);
+
+        hilog.info(Constants.DOMAIN, TAG, "isExist: Alias %{public}s is %{public}s", alias, exists ? "found" : "not found");
+        return exists;
+      } else {
+        hilog.info(Constants.DOMAIN, TAG, "isExist: File does not exist.");
+        return false;
+      }
+    } catch (e) {
+      logger.fatal(Constants.DOMAIN, TAG, "isExist mode fatal: %{public}s", String(e));
+      throw new Error(`isExist mode fatal: ${e}`);
+    }
+  }
 }
 

@@ -16,3 +16,5 @@
  */
 
 export { CustomDialog_Warning } from './src/main/ets/pages/Warning'
+
+export { CustomDialog_editSecret } from './src/main/ets/pages/EditSecret'
