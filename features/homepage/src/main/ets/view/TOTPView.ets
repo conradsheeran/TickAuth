@@ -17,7 +17,7 @@
 
 import { fileIo as fs } from "@kit.CoreFileKit"
 import { buffer } from '@kit.ArkTS';
-import { SecretClass } from "../model/TOTPModel"
+import { SecretClass, WaitDeleteItemParam } from "../model/TOTPModel"
 import { BusinessError, pasteboard } from "@kit.BasicServicesKit";
 import { bufferToString, Logger, Preference, SecretItem, WriteToJson } from "utils"
 import { GenerateTOTP, GetTOTPTimeInfo } from "totp"
@@ -45,8 +45,8 @@ export struct TOTP {
   private writeToJson = new WriteToJson(getContext(this).filesDir + Constants.SECRET_FILE_DIR)
   private preferences = new Preference(getContext(this), "Preferences");
   private oldPined: Array<string> = [];
-  private deleteIndex: number = 0;
   private deleteAlias: string = "";
+  private oldDeleteItem: Array<WaitDeleteItemParam> = []
 
   // 弹窗控制器
   editTOTPItem: CustomDialogController = new CustomDialogController({
@@ -88,17 +88,33 @@ export struct TOTP {
     builder: CustomDialog_Warning(
       {
         cancel: () => {
-          hilog.info(Constants.DOMAIN, TAG, "CustomDialog_Warning: The CANCEL button has been clicked");
+          hilog.info(Constants.DOMAIN, TAG, "warningDelete: The CANCEL button has been clicked");
         },
 
         confirm: () => {
-          hilog.info(Constants.DOMAIN, TAG, "CustomDialog_Warning: The Confirm button has been clicked")
-          this.TOTPList.splice(this.deleteIndex, 1);
-          this.writeToJson.remove(this.deleteAlias).then((isNull: boolean) => {
-            if (!isNull) {
-              this.hasKey = isNull;
+          hilog.info(Constants.DOMAIN, TAG, "warningDelete: The Confirm button has been clicked")
+
+          try {
+            if (!this.oldDeleteItem.length) {
+              this.preferences.put("WaitDeleteAlias", [new WaitDeleteItemParam(this.deleteAlias, Date.now())])
+              this.refresh = true
+            } else {
+              let newDeleteItem: Array<WaitDeleteItemParam> = [...this.oldDeleteItem, new WaitDeleteItemParam(this.deleteAlias, Date.now())];
+              this.preferences.put("WaitDeleteAlias", newDeleteItem)
+              this.refresh = true;
             }
-          })
+
+            promptAction.showToast({
+              message: `${this.deleteAlias} 将在 24 小时后删除`,
+              duration: 2000
+            });
+          } catch (e) {
+            promptAction.showToast({
+              message: `错误：${e.message} (${TAG})`,
+              duration: 2000
+            });
+            logger.error(Constants.DOMAIN, TAG, "warningDelete: %{public}s, %{public}d", e.message, e.code)
+          }
         },
 
         symbol: $r("sys.symbol.exclamationmark_triangle_fill"),
@@ -116,6 +132,23 @@ export struct TOTP {
 
   // 生命周期
   async aboutToAppear(): Promise<void> {
+    try {
+      this.oldDeleteItem = await this.preferences.get("WaitDeleteAlias", []) as Array<WaitDeleteItemParam>;
+      this.oldDeleteItem.forEach((value, index) => {
+        if (value.time <= Date.now()) {
+          this.writeToJson.remove(value.alias).then((isNull: boolean) => {
+            if (!isNull) {
+              this.hasKey = isNull;
+            }
+          })
+          this.oldDeleteItem.splice(index, 1)
+        }
+      })
+      await this.preferences.put("WaitDeleteAlias", this.oldDeleteItem)
+    } catch (e) {
+      logger.error(Constants.DOMAIN, TAG, "aboutToAppear: WaitDeleteAlias fatal, %{public}s", String(e))
+    }
+
     try {
       this.GetSecretFromJson();
     } catch (e) {
@@ -139,7 +172,7 @@ export struct TOTP {
     const fd = (await fs.open(filePath, fs.OpenMode.READ_ONLY)).fd;
     let arrayBuffer = new ArrayBuffer(12288);
 
-    await fs.read(fd, arrayBuffer).then((readLen) => {
+    await fs.read(fd, arrayBuffer).then(async (readLen) => {
       let buf = buffer.from(arrayBuffer, 0, readLen);
       this.TOTPList = JSON.parse(bufferToString(new Uint8Array(buf.buffer)).replace(/[\u0000-\u001F\u007F-\u009F]/g, "").trim()) as SecretClass[];
       fs.close(fd);
@@ -155,24 +188,31 @@ export struct TOTP {
         }
       })
 
-      this.preferences.has("PinedAlias").then(async (has: boolean) => {
-        if (has) {
-          let pinedItems = await this.preferences.get("PinedAlias", []) as Array<string>;
+      const waitDeleteItems = await this.preferences.get("WaitDeleteAlias", []) as Array<WaitDeleteItemParam>;
+      const pinedItems = await this.preferences.get("PinedAlias", []) as Array<string>;
+      this.TOTPList.sort((a, b) => {
+        const aWaitDeleteIndex = waitDeleteItems.findIndex(item => item.alias === a.alias);
+        const bWaitDeleteIndex = waitDeleteItems.findIndex(item => item.alias === b.alias);
 
-          this.TOTPList.sort((a, b) => {
-            const aIndex = pinedItems.indexOf(a.alias);
-            const bIndex = pinedItems.indexOf(b.alias);
-
-            if (aIndex === -1) {
-              return 1;
-            } else if (bIndex === -1) {
-              return -1;
-            } else {
-              return aIndex - bIndex;
-            }
-          })
+        if (aWaitDeleteIndex !== -1 && bWaitDeleteIndex === -1) {
+          return 1;
+        } else if (aWaitDeleteIndex === -1 && bWaitDeleteIndex !== -1) {
+          return -1;
+        } else if (aWaitDeleteIndex !== -1 && bWaitDeleteIndex !== -1) {
+          return 0;
         }
-      })
+
+        const aPinedIndex = pinedItems.indexOf(a.alias);
+        const bPinedIndex = pinedItems.indexOf(b.alias);
+
+        if (aPinedIndex === -1 && bPinedIndex !== -1) {
+          return 1;
+        } else if (aPinedIndex !== -1 && bPinedIndex === -1) {
+          return -1;
+        } else {
+          return aPinedIndex - bPinedIndex;
+        }
+      });
 
       hilog.info(Constants.DOMAIN, TAG, "GetSecretFromJson Succeed")
     }).catch((e: BusinessError) => {
@@ -186,7 +226,12 @@ export struct TOTP {
       List({ space: Constants.TOTPVIEW_LIST_SPACE }) {
         ForEach(this.TOTPList, (item: SecretClass) => {
           ListItem() {
-            if (this.oldPined.some(oldPinedItem => oldPinedItem === item.alias)) {
+            if (this.oldDeleteItem.some(waitDelete => waitDelete.alias === item.alias)) {
+              TOTPItem({ totpItem: item })
+                .borderWidth(2)
+                .borderRadius($r('app.float.BorderRadius'))
+                .borderColor($r('app.color.TOTPView_ListItem_deleteButton'))
+            } else if (this.oldPined.some(oldPinedItem => oldPinedItem === item.alias)) {
               TOTPItem({ totpItem: item })
                 .borderWidth(1)
                 .borderRadius($r('app.float.BorderRadius'))
@@ -209,6 +254,7 @@ export struct TOTP {
       .height(Constants.TOTPVIEW_LIST_SIZE)
       .scrollBar(BarState.Auto)
       .padding({ left: $r('app.float.TOTPView_List_padding'), right: $r('app.float.TOTPView_List_padding') })
+      .contentEndOffset(16)
     }
     .margin({ top: $r('app.float.TOTPView_List_margin') })
   }
@@ -288,9 +334,15 @@ export struct TOTP {
 
     // 删除按钮
     Button({ type: ButtonType.Circle }) {
-      SymbolGlyph($r('sys.symbol.trash'))
-        .fontSize($r('app.float.TOTPView_ListItem_DeleteButton_Symbol_size'))
-        .fontColor([Color.White])
+      if (this.oldDeleteItem.some(item => item.alias === alias)) {
+        SymbolGlyph($r('sys.symbol.undo'))
+          .fontSize($r('app.float.TOTPView_ListItem_DeleteButton_Symbol_size'))
+          .fontColor([Color.White])
+      } else {
+        SymbolGlyph($r('sys.symbol.trash'))
+          .fontSize($r('app.float.TOTPView_ListItem_DeleteButton_Symbol_size'))
+          .fontColor([Color.White])
+      }
     }
     .backgroundColor($r('app.color.TOTPView_ListItem_deleteButton'))
     .width($r("app.float.TOTPView_ListItem_Button_size"))
@@ -298,9 +350,15 @@ export struct TOTP {
     .margin({ left: $r('app.float.TOTPView_ListItem_DeleteButton_margin') })
     .onClick(() => {
       try {
-        this.deleteIndex = index;
         this.deleteAlias = alias;
-        this.warningDelete.open()
+        if (!(this.oldDeleteItem.some(item => item.alias === alias))) {
+          this.warningDelete.open()
+        } else {
+          const index = this.oldDeleteItem.findIndex(item => item.alias === this.deleteAlias);
+          this.oldDeleteItem.splice(index, 1)
+          this.preferences.put("WaitDeleteAlias", this.oldDeleteItem)
+          this.refresh = true;
+        }
       } catch (e) {
         promptAction.showToast({
           message: `错误：${e.message} (${TAG})`,

@@ -26,13 +26,13 @@ export interface SecretParams {
   issuer: string;
 }
 
-export function ProcessSecret(input: string, issuer: string = ""): SecretParams {
+export function ProcessSecret(input: string): SecretParams {
   const params: SecretParams = {
     secret: "",
     algorithm: "SHA1",
     digits: 6,
     period: 30,
-    issuer: issuer
+    issuer: ""
   };
 
   if (input.indexOf('secret=') !== -1) {

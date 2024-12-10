@@ -30,3 +30,13 @@ export class SecretClass {
     this.algorithm = algorithm;
   }
 }
+
+export class WaitDeleteItemParam {
+  alias: string = "";
+  time: number = 0;
+
+  constructor(alias: string, clickTime: number ) {
+    this.alias = alias;
+    this.time = clickTime + 86400000
+  }
+}
