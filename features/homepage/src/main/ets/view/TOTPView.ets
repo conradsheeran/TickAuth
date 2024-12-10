@@ -26,6 +26,7 @@ import { hilog } from "@kit.PerformanceAnalysisKit";
 import { promptAction } from "@kit.ArkUI";
 import { CustomDialog_editSecret, CustomDialog_Warning } from "uicomponent"
 import { preferences } from "@kit.ArkData";
+import { pinyin4js as pinyin } from "@ohos/pinyin4js"
 
 const TAG: string = "TOTPView";
 const logger = new Logger(getContext(this))
@@ -146,7 +147,10 @@ export struct TOTP {
       this.preferences.get("按字母排序", true).then((value: preferences.ValueType) => {
         if (value) {
           this.TOTPList.sort((a, b) => {
-            return a.alias.localeCompare(b.alias);
+            const aLetter: string = pinyin.convertToPinyinString(a.alias, "", pinyin.FIRST_LETTER);
+            const bLetter: string = pinyin.convertToPinyinString(b.alias, "", pinyin.FIRST_LETTER);
+
+            return aLetter.localeCompare(bLetter);
           })
         }
       })
