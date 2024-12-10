@@ -6,6 +6,6 @@
   "author": "Yang He",
   "license": "GPL-3.0",
   "dependencies": {
-    "utils": "file:../../common/utils"
+    "utils": "file:../utils"
   }
 }

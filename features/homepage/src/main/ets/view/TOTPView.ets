@@ -39,7 +39,7 @@ export struct TOTP {
   @State CustomDialog_editTOTPItem_IsClosed: boolean = false;
   @State editTOTPItem_alias: string = '';
   @State editTOTPItem_secret: string = '';
-  @State editTOTPItem_item: SecretItem = { alias: "", secret: "" }
+  @State editTOTPItem_item: SecretItem = { alias: "", secret: "", digit: 6, timeStep: 30, algorithm: "SHA1", raw: "" }
 
   private writeToJson = new WriteToJson(getContext(this).filesDir + Constants.SECRET_FILE_DIR)
   private preferences = new Preference(getContext(this), "Preferences");
@@ -56,7 +56,14 @@ export struct TOTP {
         },
 
         confirm: () => {
-          this.writeToJson.edit(this.editTOTPItem_item, { alias: this.editTOTPItem_alias, secret: this.editTOTPItem_item.secret })
+          this.writeToJson.edit(this.editTOTPItem_item, {
+            alias: this.editTOTPItem_alias,
+            secret: this.editTOTPItem_item.secret,
+            digit: this.editTOTPItem_item.digit,
+            timeStep: this.editTOTPItem_item.timeStep,
+            algorithm: this.editTOTPItem_item.algorithm,
+            raw: this.editTOTPItem_item.raw
+          })
           this.refresh = true;
           this.CustomDialog_editTOTPItem_IsClosed = true
         },
@@ -70,8 +77,7 @@ export struct TOTP {
         cancelButtonFontColor: $r("sys.color.brand_font"),
         mode: "edit",
 
-        alias: $editTOTPItem_alias,
-        secret: $editTOTPItem_secret
+        alias: $editTOTPItem_alias
       }),
 
     customStyle: true,
@@ -130,7 +136,7 @@ export struct TOTP {
 
     const filePath = getContext(this).filesDir + Constants.SECRET_FILE_DIR
     const fd = (await fs.open(filePath, fs.OpenMode.READ_ONLY)).fd;
-    let arrayBuffer = new ArrayBuffer(4096);
+    let arrayBuffer = new ArrayBuffer(12288);
 
     await fs.read(fd, arrayBuffer).then((readLen) => {
       let buf = buffer.from(arrayBuffer, 0, readLen);
@@ -306,14 +312,14 @@ export struct TOTP {
 struct TOTPItem {
   @Prop totpItem: SecretClass;
   @State code: string = '';
-  @State totalTime: number = 30;
-  @State currentRemain: number = GetTOTPTimeInfo();
+  @State totalTime: number = this.totpItem.timeStep;
+  @State currentRemain: number = GetTOTPTimeInfo(this.totpItem.timeStep);
 
   private gradientColor: LinearGradient = new LinearGradient([{ color: $r('app.color.TOTPView_ListItem_Progress_end'), offset: 0.2 },
                                                               { color: $r('app.color.TOTPView_ListItem_Progress_start'), offset: 1.0 }])
 
   private generateTOTP() {
-    GenerateTOTP(this.totpItem.secret).then((result) => {
+    GenerateTOTP(this.totpItem.secret, this.totpItem.digit, this.totpItem.timeStep, this.totpItem.algorithm).then((result) => {
       this.code = result.code;
       hilog.info(Constants.DOMAIN, TAG, "GenerateTOTP(%{public}s) Succeed", this.totpItem.alias);
     }).catch((e: BusinessError) => {
@@ -331,7 +337,7 @@ struct TOTPItem {
       setInterval(async () => {
         this.currentRemain -= 1;
         if (this.currentRemain === 0) {
-          this.currentRemain = 30;
+          this.currentRemain = this.totalTime;
           this.generateTOTP();
         }
       }, 1000)

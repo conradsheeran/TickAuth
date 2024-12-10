@@ -16,14 +16,20 @@
  */
 
 import { scanBarcode, scanCore } from "@kit.ScanKit";
-import { Logger, ProcessSecret, SecretParams } from "utils";
+import { Logger } from "./Logger";
+import { ProcessSecret, SecretParams } from "./ProcessSecret"
 import { Constants } from "../common/Constants"
 import { hilog } from "@kit.PerformanceAnalysisKit";
 
 const logger = new Logger(getContext(this))
 const TAG: string = "CatchSecretByScan"
 
-export async function CatchSecretByScan(context: Context): Promise<SecretParams> {
+interface ScanParam {
+  raw: string;
+  SecretParams: SecretParams;
+}
+
+export async function CatchSecretByScan(context: Context): Promise<ScanParam> {
   hilog.info(Constants.DOMAIN, TAG, "CatchSecretByScan Start")
 
   let options: scanBarcode.ScanOptions = {
@@ -41,7 +47,7 @@ export async function CatchSecretByScan(context: Context): Promise<SecretParams>
       params.issuer, params.secret, params.algorithm, params.digits, params.period)
 
     logger.info(Constants.DOMAIN, TAG, "CatchSecretByScan Succeed")
-    return params;
+    return { raw: result.originalValue, SecretParams: params };
   } catch (e) {
     logger.error(Constants.DOMAIN, TAG, "CatchSecretByScan Fatal: %{public}s", String(e))
     throw new Error(`CatchSecretByScan: ${e}`);

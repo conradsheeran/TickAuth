@@ -27,6 +27,10 @@ const logger = new Logger(getContext(this))
 export interface SecretItem {
   alias: string;
   secret: string;
+  digit: number;
+  timeStep: number;
+  algorithm: string;
+  raw: string;
 }
 
 export class WriteToJson {

@@ -1,0 +1,10 @@
+[
+  {
+    "alias": "demo",
+    "secret": "B5FLUZMN27GZOF63NVWDLO7ZU2WP7XMI",
+    "digit": 6,
+    "timeStep": 30,
+    "algorithm": "SHA1",
+    "raw": "otpauth://totp/SecureApp:user%40example.com?secret=B5FLUZMN27GZOF63NVWDLO7ZU2WP7XMI&issuer=SecureApp&algorithm=SHA1&period=30"
+  }
+]

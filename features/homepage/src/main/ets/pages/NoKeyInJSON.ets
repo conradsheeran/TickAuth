@@ -17,8 +17,7 @@
 
 import { Constants } from "../common/Constants";
 import { hilog } from "@kit.PerformanceAnalysisKit";
-import { CatchSecretByScan } from "../model/CatchSecretByScan";
-import { Logger, WriteToJson } from "utils";
+import { Logger, WriteToJson, CatchSecretByScan } from "utils";
 import { CustomDialog_editSecret } from "uicomponent"
 import { common } from "@kit.AbilityKit";
 import { promptAction, SelectDialog } from "@kit.ArkUI";
@@ -28,9 +27,14 @@ const logger = new Logger(getContext(this))
 
 @Component
 export struct NoKeyInJSON {
-  @State alias: string = "default";
+  @State alias: string = "";
   @State secret: string = "";
+  @State digit: number = 6;
+  @State timeStep: number = 30;
+  @State algorithm: string = "SHA1";
+  @State rawSecretParam: string = "";
   @Link hasKey: boolean;
+  @State isConfirm: boolean = false;
   @State CustomDialog_editTOTPItemIsClosed: boolean = false;
 
   dialogControllerList: CustomDialogController = new CustomDialogController({
@@ -50,8 +54,12 @@ export struct NoKeyInJSON {
             try {
               hilog.info(Constants.DOMAIN, TAG, "The ADD button was clicked")
 
-              const secretParam = await CatchSecretByScan(this.context);
-              this.secret = secretParam.secret
+              this.rawSecretParam = (await CatchSecretByScan(this.context)).raw;
+              const secretParam = (await CatchSecretByScan(this.context)).SecretParams;
+              this.secret = secretParam.secret;
+              this.digit = secretParam.digits;
+              this.algorithm = secretParam.algorithm;
+              this.timeStep = secretParam.period;
               hilog.info(Constants.DOMAIN, TAG, "The SECRET accepted: %{private}s", String(this.alias))
 
               this.editTOTPItem.open()
@@ -62,14 +70,23 @@ export struct NoKeyInJSON {
                 await new Promise<void>(resolve => setTimeout(resolve, 100));
               }
 
-              hilog.debug(Constants.DOMAIN, TAG, "The edited alias is %{public}s", this.alias)
+              if (this.isConfirm) {
+                hilog.debug(Constants.DOMAIN, TAG, "The edited alias is %{public}s", this.alias)
 
-              await this.writeToJson.write({ "alias": this.alias, "secret": this.secret });
-              hilog.debug(Constants.DOMAIN, TAG, "WriteToJson completed", this.alias)
+                await this.writeToJson.write({
+                  alias: this.alias,
+                  secret: this.secret,
+                  digit: this.digit,
+                  timeStep: this.timeStep,
+                  algorithm: this.algorithm,
+                  raw: this.rawSecretParam
+                });
+                hilog.debug(Constants.DOMAIN, TAG, "WriteToJson completed", this.alias)
 
-              this.hasKey = true;
-              this.CustomDialog_editTOTPItemIsClosed = false
-              logger.info(Constants.DOMAIN, TAG, "The SECRET(%{public}s) has been added", this.alias)
+                this.hasKey = true;
+                this.CustomDialog_editTOTPItemIsClosed = false
+                logger.info(Constants.DOMAIN, TAG, "The SECRET(%{public}s) has been added", this.alias)
+              }
             } catch (e) {
               promptAction.showToast({
                 message: `错误：${e.message} (${TAG})`,
@@ -96,8 +113,7 @@ export struct NoKeyInJSON {
           this.hasKey = false;
         },
 
-        confirm: () => {
-          this.writeToJson.write({ alias: this.alias, secret: this.secret })
+        confirm: async () => {
           this.hasKey = true
         },
 
@@ -112,8 +128,7 @@ export struct NoKeyInJSON {
 
         contentSecret: "请输入您的的密钥",
 
-        alias: $alias,
-        secret: $secret
+        alias: $alias
       }),
 
     customStyle: true,
@@ -130,10 +145,12 @@ export struct NoKeyInJSON {
     builder: CustomDialog_editSecret(
       {
         cancel: () => {
-          this.CustomDialog_editTOTPItemIsClosed = true
+          this.isConfirm = false;
+          this.CustomDialog_editTOTPItemIsClosed = false
         },
 
         confirm: () => {
+          this.isConfirm = true
           this.CustomDialog_editTOTPItemIsClosed = true
         },
 
@@ -146,8 +163,7 @@ export struct NoKeyInJSON {
         cancelButtonFontColor: $r("sys.color.brand_font"),
         mode: "edit",
 
-        alias: $alias,
-        secret: $secret
+        alias: $alias
       }),
 
     customStyle: true,
