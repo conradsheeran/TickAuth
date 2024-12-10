@@ -26,7 +26,7 @@ export interface SecretParams {
   issuer: string;
 }
 
-export function ProcessSecret(input: string, issuer: string = "default"): SecretParams {
+export function ProcessSecret(input: string, issuer: string = ""): SecretParams {
   const params: SecretParams = {
     secret: "",
     algorithm: "SHA1",

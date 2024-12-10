@@ -21,13 +21,12 @@ import { preferences } from '@kit.ArkData';
 import { CustomDialog_disclaimer } from '../uicomponent/Disclaimer'
 import { HomePage, NoKeyInJSON } from "homepage"
 import { Settings } from "settings"
-import { CatchSecretByScan } from "../model/CatchSecretByScan"
-import { WriteToJson, Logger, Preference } from "utils"
+import { WriteToJson, Logger, Preference, CatchSecretByScan } from "utils"
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { Constants } from '../common/Constants';
 import { UserAuth } from '../model/UserAuth';
 import { UserAuthView } from '../view/UserAuth';
-import { CustomDialog_editSecret, CustomDialog_Warning } from "uicomponent"
+import { CustomDialog_editSecret } from "uicomponent"
 
 const TAG: string = "Index"
 const logger = new Logger(getContext(this))
@@ -42,9 +41,14 @@ struct Index {
   @State CustomDialog_editTOTPItemIsClosed: boolean = false;
   @State alias: string = "";
   @State secret: string = "";
+  @State digit: number = 6;
+  @State timeStep: number = 30;
+  @State algorithm: string = "SHA1";
+  @State rawSecretParam: string = "";
   @State useDefault: boolean = false;
   @State currentIndex: number = 0;
   @State onForeground: boolean = false;
+  @State isConfirm: boolean = false;
 
   // 弹窗控制器
   dialogControllerList: CustomDialogController = new CustomDialogController({
@@ -64,8 +68,12 @@ struct Index {
             try {
               hilog.info(Constants.DOMAIN, TAG, "The ADD button was clicked")
 
-              const secretParam = await CatchSecretByScan(this.context);
-              this.secret = secretParam.secret
+              this.rawSecretParam = (await CatchSecretByScan(this.context)).raw;
+              const secretParam = (await CatchSecretByScan(this.context)).SecretParams;
+              this.secret = secretParam.secret;
+              this.digit = secretParam.digits;
+              this.algorithm = secretParam.algorithm;
+              this.timeStep = secretParam.period;
               hilog.info(Constants.DOMAIN, TAG, "The SECRET accepted: %{private}s", String(this.alias))
 
               this.editTOTPItem.open()
@@ -76,16 +84,25 @@ struct Index {
                 await new Promise<void>(resolve => setTimeout(resolve, 100));
               }
 
-              hilog.debug(Constants.DOMAIN, TAG, "The edited alias is %{public}s", this.alias)
+              if (this.isConfirm) {
+                hilog.debug(Constants.DOMAIN, TAG, "The edited alias is %{public}s", this.alias)
 
-              await this.writeToJson.write({ "alias": this.alias, "secret": this.secret });
-              hilog.debug(Constants.DOMAIN, TAG, "WriteToJson completed", this.alias)
+                await this.writeToJson.write({
+                  alias: this.alias,
+                  secret: this.secret,
+                  digit: this.digit,
+                  timeStep: this.timeStep,
+                  algorithm: this.algorithm,
+                  raw: this.rawSecretParam
+                });
+                hilog.debug(Constants.DOMAIN, TAG, "WriteToJson completed", this.alias)
 
-              // 控制页面刷新
-              this.hasKey = true;
-              this.refresh = true;
-              this.CustomDialog_editTOTPItemIsClosed = false
-              logger.info(Constants.DOMAIN, TAG, "The SECRET(%{public}s) has been added", this.alias)
+                // 控制页面刷新
+                this.hasKey = true;
+                this.refresh = true;
+                this.CustomDialog_editTOTPItemIsClosed = false
+                logger.info(Constants.DOMAIN, TAG, "The SECRET(%{public}s) has been added", this.alias)
+              }
             } catch (e) {
               promptAction.showToast({
                 message: `错误：${e.message} (${TAG})`,
@@ -128,10 +145,12 @@ struct Index {
     builder: CustomDialog_editSecret(
       {
         cancel: () => {
-          this.CustomDialog_editTOTPItemIsClosed = true
+          this.isConfirm = false;
+          this.CustomDialog_editTOTPItemIsClosed = false
         },
 
         confirm: () => {
+          this.isConfirm = true
           this.CustomDialog_editTOTPItemIsClosed = true
         },
 
@@ -144,8 +163,7 @@ struct Index {
         cancelButtonFontColor: $r("sys.color.brand_font"),
         mode: "edit",
 
-        alias: $alias,
-        secret: $secret
+        alias: $alias
       }),
 
     customStyle: true,
@@ -162,8 +180,7 @@ struct Index {
           this.refresh = false;
         },
 
-        confirm: () => {
-          this.writeToJson.write({ alias: this.alias, secret: this.secret })
+        confirm: async () => {
           this.hasKey = true
           this.refresh = true
         },
@@ -179,8 +196,7 @@ struct Index {
 
         contentSecret: "请输入您的的密钥",
 
-        alias: $alias,
-        secret: $secret
+        alias: $alias
       }),
 
     customStyle: true,

@@ -7,7 +7,7 @@
   "license": "GPL-3.0",
   "dependencies": {
     "utils": "file:../../common/utils",
-    "totp": "file:../../features/totp",
+    "totp": "file:../../common/totp",
     "homepage": "file:../../features/homepage",
     "settings": "file:../../features/settings",
     "uicomponent": "file:../../common/uicomponent"

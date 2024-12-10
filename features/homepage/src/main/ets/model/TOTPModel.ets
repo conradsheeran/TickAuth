@@ -18,9 +18,15 @@
 export class SecretClass {
   alias: string = "";
   secret: string = "";
+  digit: number = 6;
+  timeStep: number = 30;
+  algorithm: string = "SHA1";
 
-  constructor(alias: string, secret: string) {
+  constructor(alias: string, secret: string, digit: number, timeStep: number, algorithm: string ) {
     this.alias = alias;
     this.secret = secret;
+    this.digit = digit;
+    this.timeStep = timeStep;
+    this.algorithm = algorithm;
   }
 }
