@@ -68,16 +68,19 @@ struct Index {
             try {
               hilog.info(Constants.DOMAIN, TAG, "The ADD button was clicked")
 
-              this.rawSecretParam = (await CatchSecretByScan(this.context)).raw;
-              const secretParam = (await CatchSecretByScan(this.context)).SecretParams;
-              this.secret = secretParam.secret;
-              this.digit = secretParam.digits;
-              this.algorithm = secretParam.algorithm;
-              this.timeStep = secretParam.period;
-              hilog.info(Constants.DOMAIN, TAG, "The SECRET accepted: %{private}s", String(this.alias))
+              CatchSecretByScan(this.context).then((value) => {
+                this.rawSecretParam = value.raw
+                const secretParam = value.SecretParams;
+                this.secret = secretParam.secret;
+                this.digit = secretParam.digits;
+                this.algorithm = secretParam.algorithm;
+                this.timeStep = secretParam.period;
 
-              this.editTOTPItem.open()
-              hilog.info(Constants.DOMAIN, TAG, "The editTOTPItem DIALOG opened")
+                hilog.info(Constants.DOMAIN, TAG, "The SECRET accepted: %{private}s", String(this.alias))
+
+                this.editTOTPItem.open()
+                hilog.info(Constants.DOMAIN, TAG, "The editTOTPItem DIALOG opened")
+              })
 
               // 等待用户输入
               while (!this.CustomDialog_editTOTPItemIsClosed) {
