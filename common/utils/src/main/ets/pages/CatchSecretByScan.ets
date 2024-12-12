@@ -17,19 +17,19 @@
 
 import { scanBarcode, scanCore } from "@kit.ScanKit";
 import { Logger } from "./Logger";
-import { ProcessSecret, SecretParams } from "./ProcessSecret"
+import { ProcessSecret, ISecretParams } from "./ProcessSecret"
 import { Constants } from "../common/Constants"
 import { hilog } from "@kit.PerformanceAnalysisKit";
 
 const logger = new Logger(getContext(this))
 const TAG: string = "CatchSecretByScan"
 
-interface ScanParam {
+interface IScanParam {
   raw: string;
-  SecretParams: SecretParams;
+  SecretParams: ISecretParams;
 }
 
-export async function CatchSecretByScan(context: Context): Promise<ScanParam> {
+export async function CatchSecretByScan(context: Context): Promise<IScanParam> {
   hilog.info(Constants.DOMAIN, TAG, "CatchSecretByScan Start")
 
   let options: scanBarcode.ScanOptions = {
