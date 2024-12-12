@@ -24,7 +24,7 @@ import { Constants } from '../common/Constants';
 const TAG: string = "WriteToJson";
 const logger = new Logger(getContext(this))
 
-export interface SecretItem {
+export interface ISecretItem {
   alias: string;
   secret: string;
   digit: number;
@@ -40,8 +40,8 @@ export class WriteToJson {
     this.filePath = filePath;
   }
 
-  private async readJsonFile(): Promise<SecretItem[]> {
-    let dataArray: SecretItem[] = [];
+  private async readJsonFile(): Promise<ISecretItem[]> {
+    let dataArray: ISecretItem[] = [];
 
     try {
       const res: boolean = await fs.access(this.filePath);
@@ -59,7 +59,7 @@ export class WriteToJson {
     return dataArray;
   }
 
-  private async writeJsonFile(dataArray: SecretItem[]): Promise<void> {
+  private async writeJsonFile(dataArray: ISecretItem[]): Promise<void> {
     const fd = (
       await fs.open(this.filePath, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE | fs.OpenMode.TRUNC)
     ).fd;
@@ -67,7 +67,7 @@ export class WriteToJson {
     fs.close(fd)
   }
 
-  async write(newItem: SecretItem): Promise<void> {
+  async write(newItem: ISecretItem): Promise<void> {
     hilog.info(Constants.DOMAIN, TAG, "Write mode start");
 
     try {
@@ -106,7 +106,7 @@ export class WriteToJson {
         throw new Error("Provided string content must be a JSON array.");
       }
 
-      newContent.forEach((newItem: SecretItem) => {
+      newContent.forEach((newItem: ISecretItem) => {
         const index = dataArray.findIndex((item) => item.alias === newItem.alias);
 
         if (index !== -1) {
@@ -131,7 +131,7 @@ export class WriteToJson {
     }
   }
 
-  async edit(oldItem: SecretItem, newItem: SecretItem): Promise<void> {
+  async edit(oldItem: ISecretItem, newItem: ISecretItem): Promise<void> {
     hilog.info(Constants.DOMAIN, TAG, "Edit mode start");
 
     try {

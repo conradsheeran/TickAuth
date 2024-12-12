@@ -18,7 +18,7 @@
 import { JSON, util } from "@kit.ArkTS"
 
 // Consider using @ohos.url
-export interface SecretParams {
+export interface ISecretParams {
   secret: string;
   algorithm: string;
   digits: number;
@@ -26,8 +26,8 @@ export interface SecretParams {
   issuer: string;
 }
 
-export function ProcessSecret(input: string): SecretParams {
-  const params: SecretParams = {
+export function ProcessSecret(input: string): ISecretParams {
+  const params: ISecretParams = {
     secret: "",
     algorithm: "SHA1",
     digits: 6,
@@ -65,14 +65,14 @@ export function ProcessSecret(input: string): SecretParams {
 }
 
 
-export function SecretParamsToUint8Array(params: SecretParams): Uint8Array {
+export function SecretParamsToUint8Array(params: ISecretParams): Uint8Array {
   const jsonString = JSON.stringify(params);
   const encoder = new util.TextEncoder();
   return encoder.encodeInto(jsonString);
 }
 
-export function Uint8ArrayToSecretParams(data: Uint8Array): SecretParams {
+export function Uint8ArrayToSecretParams(data: Uint8Array): ISecretParams {
   const decoder = new util.TextDecoder();
   const jsonString = decoder.decodeToString(data);
-  return JSON.parse(jsonString) as SecretParams;
+  return JSON.parse(jsonString) as ISecretParams;
 }

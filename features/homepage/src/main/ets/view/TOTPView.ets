@@ -19,7 +19,7 @@ import { fileIo as fs } from "@kit.CoreFileKit"
 import { buffer } from '@kit.ArkTS';
 import { SecretClass, WaitDeleteItemParam } from "../model/TOTPModel"
 import { BusinessError, pasteboard } from "@kit.BasicServicesKit";
-import { bufferToString, Logger, Preference, SecretItem, WriteToJson } from "utils"
+import { bufferToString, Logger, Preference, ISecretItem, WriteToJson } from "utils"
 import { GenerateTOTP, GetTOTPTimeInfo } from "totp"
 import { Constants } from "../common/Constants";
 import { hilog } from "@kit.PerformanceAnalysisKit";
@@ -40,7 +40,7 @@ export struct TOTP {
   @State CustomDialog_editTOTPItem_IsClosed: boolean = false;
   @State editTOTPItem_alias: string = '';
   @State editTOTPItem_secret: string = '';
-  @State editTOTPItem_item: SecretItem = { alias: "", secret: "", digit: 6, timeStep: 30, algorithm: "SHA1", raw: "" }
+  @State editTOTPItem_item: ISecretItem = { alias: "", secret: "", digit: 6, timeStep: 30, algorithm: "SHA1", raw: "" }
 
   private writeToJson = new WriteToJson(getContext(this).filesDir + Constants.SECRET_FILE_DIR)
   private preferences = new Preference(getContext(this), "Preferences");
@@ -315,7 +315,7 @@ export struct TOTP {
     .margin({ left: $r('app.float.TOTPView_ListItem_EditButton_margin'), right: $r('app.float.TOTPView_ListItem_DeleteButton_margin') })
     .onClick(async () => {
       try {
-        this.editTOTPItem_item = item as SecretItem;
+        this.editTOTPItem_item = item as ISecretItem;
         this.editTOTPItem_alias = item.alias;
         this.editTOTPItem_secret = item.secret;
         this.editTOTPItem.open()

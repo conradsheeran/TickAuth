@@ -54,7 +54,7 @@ struct Index {
   dialogControllerList: CustomDialogController = new CustomDialogController({
     builder: SelectDialog({
       title: '请选择一种添加方式',
-      selectedIndex: 2,
+      selectedIndex: 3,
       confirm: {
         value: '取消',
         action: () => {
@@ -119,6 +119,20 @@ struct Index {
           title: '手动输入 TOTP 验证码参数',
           action: () => {
             this.newTOTPItem.open()
+          }
+        },
+        {
+          title: '添加 Steam 验证码',
+          action: () => {
+            try {
+              this.pathStack.pushPath({ name: "SteamPage" })
+            } catch (e) {
+              promptAction.showToast({
+                message: `错误：${e.message} (${TAG})`,
+                duration: 2000
+              });
+              logger.error(Constants.DOMAIN, TAG, "pushPath(SteamPage) Fatal: %{public}s code: {public}d", e.message, e.code)
+            }
           }
         }
       ]

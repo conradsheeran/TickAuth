@@ -8,6 +8,7 @@
   "dependencies": {
     "utils": "file:../../common/utils",
     "totp": "file:../../common/totp",
-    "uicomponent": "file:../../common/uicomponent"
+    "uicomponent": "file:../../common/uicomponent",
+    "steam": "file:../../common/steam"
   }
 }
