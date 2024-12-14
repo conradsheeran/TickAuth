@@ -15,3 +15,6 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+export class Constants {
+  static readonly DOMAIN: number = 0x00203
+}
