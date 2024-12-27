@@ -10,6 +10,7 @@
     "totp": "file:../../common/totp",
     "homepage": "file:../../features/homepage",
     "settings": "file:../../features/settings",
-    "uicomponent": "file:../../common/uicomponent"
+    "uicomponent": "file:../../common/uicomponent",
+    "steam": "file:../../common/steam"
   }
 }

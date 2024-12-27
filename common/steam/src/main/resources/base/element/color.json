@@ -1,0 +1,12 @@
+{
+  "color": [
+    {
+      "name": "background",
+      "value": "#F8F4ED"
+    },
+    {
+      "name": "newSteamTOTP_Button_color",
+      "value": "#4e7ca1"
+    }
+  ]
+}

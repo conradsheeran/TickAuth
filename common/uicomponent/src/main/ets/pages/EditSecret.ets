@@ -18,9 +18,10 @@
 import { hilog } from "@kit.PerformanceAnalysisKit";
 import { promptAction } from "@kit.ArkUI";
 import { Constants } from "../common/Constants";
-import { WriteToJson } from "utils";
+import { Logger, WriteToJson } from "utils";
 
 const TAG: string = "CustomDialog_EditSecret";
+const logger = new Logger(getContext(this));
 
 @CustomDialog
 export struct CustomDialog_editSecret {
@@ -43,7 +44,6 @@ export struct CustomDialog_editSecret {
   @State algorithm: string = "SHA1";
 
   @Prop mode: string;
-  @Prop titleSecret: string;
   @Prop contentSecret: string;
 
   private isConfirm: boolean = false;
@@ -65,6 +65,14 @@ export struct CustomDialog_editSecret {
         this.DialogContent()
       }
       .height("55%")
+      .width("96%")
+      .borderRadius($r('app.float.BorderRadius'))
+      .backgroundColor($r('app.color.background'))
+    } else if (this.mode === "newSteamCode") {
+      Column() {
+        this.DialogContent()
+      }
+      .height("36%")
       .width("96%")
       .borderRadius($r('app.float.BorderRadius'))
       .backgroundColor($r('app.color.background'))
@@ -96,7 +104,7 @@ export struct CustomDialog_editSecret {
           } else {
             this.isConfirm = false
           }
-        } else if (this.mode === "new") {
+        } else if (this.mode === "new" || this.mode === "newSteamCode") {
           if (!(await this.writeToJson.isExist(input))) {
             this.alias = input;
             this.isConfirm = true;
@@ -107,7 +115,7 @@ export struct CustomDialog_editSecret {
       })
       .width(Constants.CUSTOMDIALOG_WARNING_TEXT_WIDTH)
 
-    if (this.mode === "new") {
+    if (this.mode === "new" || this.mode === "newSteamCode") {
       TextInput({ placeholder: this.contentSecret })
         .margin({ top: $r('app.float.CustomDialog_Warning_TextInput_margin') })
         .enterKeyType(EnterKeyType.Done)
@@ -120,84 +128,86 @@ export struct CustomDialog_editSecret {
         })
         .width(Constants.CUSTOMDIALOG_WARNING_TEXT_WIDTH);
 
-      Row() {
-        Text("加密方式: ")
-        .fontSize(16)
-        .textAlign(TextAlign.Start)
-        .margin({ left: 5 })
+      if (this.mode !== "newSteamCode") {
+        Row() {
+          Text("加密方式: ")
+            .fontSize(16)
+            .textAlign(TextAlign.Start)
+            .margin({ left: 5 })
 
-        Blank()
+          Blank()
 
-        Select([{ value: 'SHA1' }, { value: 'SHA256' }, { value: 'SHA512' }])
-          .value("请选择您的加密方式")
-          .selected(0)
-          .fontColor($r('sys.color.font_primary'))
-          .onSelect((index: number, value: string) => {
-            this.algorithm = value
-          })
+          Select([{ value: 'SHA1' }, { value: 'SHA256' }, { value: 'SHA512' }])
+            .value("请选择您的加密方式")
+            .selected(0)
+            .fontColor($r('sys.color.font_primary'))
+            .onSelect((index: number, value: string) => {
+              this.algorithm = value
+            })
         }
         .width(Constants.CUSTOMDIALOG_WARNING_TEXT_WIDTH)
         .margin({ top: 18 })
 
-      Row() {
-        Text("有效时长: ")
-          .fontSize(16)
-          .textAlign(TextAlign.Start)
-          .padding({ left: 5 })
-          .margin({ left: 5 })
+        Row() {
+          Text("有效时长: ")
+            .fontSize(16)
+            .textAlign(TextAlign.Start)
+            .padding({ left: 5 })
+            .margin({ left: 5 })
 
-        Blank()
+          Blank()
+
+          Row() {
+            Slider({
+              value: this.timeStep,
+              step: 5,
+              style: SliderStyle.InSet,
+              direction: Axis.Horizontal,
+              max: 60
+            })
+              .selectedColor("#4e7ca1")
+              .showSteps(true)
+              .onChange((value: number, mode: SliderChangeMode) => {
+                this.timeStep = value
+              })
+            Text(this.timeStep.toFixed(0)).fontSize(14)
+          }
+          .width(210)
+        }
+        .width(Constants.CUSTOMDIALOG_WARNING_TEXT_WIDTH)
+        .padding({ right: 12 })
+        .margin({ top: 18, right: 10 })
 
         Row() {
-          Slider({
-            value: this.timeStep,
-            step: 5,
-            style: SliderStyle.InSet,
-            direction: Axis.Horizontal,
-            max: 60
-          })
-            .selectedColor("#4e7ca1")
-            .showSteps(true)
-            .onChange((value: number, mode: SliderChangeMode) => {
-              this.timeStep = value
+          Text("验证码位数: ")
+            .fontSize(16)
+            .textAlign(TextAlign.Start)
+            .padding({ left: 5 })
+            .margin({ left: 5 })
+
+          Blank()
+
+          Row() {
+            Slider({
+              value: this.digit,
+              step: 1,
+              style: SliderStyle.InSet,
+              direction: Axis.Horizontal,
+              max: 8
             })
-          Text(this.timeStep.toFixed(0)).fontSize(14)
+              .selectedColor("#4e7ca1")
+              .showSteps(true)
+              .onChange((value: number, mode: SliderChangeMode) => {
+                this.digit = value
+              })
+            Text(this.digit.toFixed(0)).fontSize(14)
+          }
+          .width(210)
         }
-        .width(210)
+        .width(Constants.CUSTOMDIALOG_WARNING_TEXT_WIDTH)
+        .padding({ right: 12 })
+        .margin({ top: 18, right: 10 })
       }
-      .width(Constants.CUSTOMDIALOG_WARNING_TEXT_WIDTH)
-      .padding({ right: 12 })
-      .margin({ top: 18, right: 10 })
-
-      Row() {
-        Text("验证码位数: ")
-          .fontSize(16)
-          .textAlign(TextAlign.Start)
-          .padding({ left: 5 })
-          .margin({ left: 5 })
-
-        Blank()
-
-        Row() {
-          Slider({
-            value: this.digit,
-            step: 1,
-            style: SliderStyle.InSet,
-            direction: Axis.Horizontal,
-            max: 8
-          })
-            .selectedColor("#4e7ca1")
-            .showSteps(true)
-            .onChange((value: number, mode: SliderChangeMode) => {
-              this.digit = value
-            })
-          Text(this.digit.toFixed(0)).fontSize(14)
-        }
-        .width(210)
-      }
-      .width(Constants.CUSTOMDIALOG_WARNING_TEXT_WIDTH)
-      .padding({ right: 12 })
-      .margin({ top: 18, right: 10 })
     }
 
     Blank()
@@ -207,15 +217,20 @@ export struct CustomDialog_editSecret {
         .onClick(async () => {
           if (this.controller != undefined && this.isConfirm && this.isConfirm_secret) {
             if (this.mode === "new") {
-              await this.writeToJson.write({
-                alias: this.alias,
-                secret: this.secret,
-                digit: this.digit,
-                timeStep: this.timeStep,
-                algorithm: this.algorithm,
-                raw: this.secret
-              });
-            }
+              try {
+                await this.writeToJson.write({
+                  type: "normal",
+                  alias: this.alias,
+                  secret: this.secret,
+                  digit: this.digit,
+                  timeStep: this.timeStep,
+                  algorithm: this.algorithm,
+                  raw: this.secret
+                });
+              } catch (e) {
+                logger.error(Constants.DOMAIN, TAG, "new: %{public}s, %{public}d", e.message, e.code)
+              }
+            } //todo: 建议直接在弹窗写入，降低代码修改量
             this.controller.close();
             this.confirm();
           } else if (!this.isConfirm) {
@@ -226,7 +241,7 @@ export struct CustomDialog_editSecret {
           } else if (!this.isConfirm_secret) {
             promptAction.showToast({
               message: "请输入正确的密钥",
-              duration: 1500
+              duration: 2000
             });
           }
         })

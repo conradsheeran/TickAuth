@@ -91,6 +91,7 @@ struct Index {
                 hilog.debug(Constants.DOMAIN, TAG, "The edited alias is %{public}s", this.alias)
 
                 await this.writeToJson.write({
+                  type: "normal",
                   alias: this.alias,
                   secret: this.secret,
                   digit: this.digit,
@@ -122,7 +123,7 @@ struct Index {
           }
         },
         {
-          title: '添加 Steam 验证码',
+          title: '添加 Steam 手机令牌',
           action: () => {
             try {
               this.pathStack.pushPath({ name: "SteamPage" })
