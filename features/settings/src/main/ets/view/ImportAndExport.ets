@@ -209,7 +209,7 @@ struct ImportAndExport {
       .justifyContent(FlexAlign.Center)
     }
     .backgroundColor($r('app.color.background'))
-    .title('导入和导出')
+    .title('导入和导出', { backgroundColor: "#93B5CF" })
     .onBackPressed(() => {
       this.pathStack.pop()
       return true;

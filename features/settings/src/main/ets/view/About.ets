@@ -168,7 +168,7 @@ struct About {
       .width("100%")
       .height("100%")
     }
-    .title("关于")
+    .title("关于", { backgroundColor: "#93B5CF" })
     .backgroundColor("#F8F4ED")
     .onBackPressed(() => {
       this.pathStack.pop()
