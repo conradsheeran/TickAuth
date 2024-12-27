@@ -219,6 +219,7 @@ export struct CustomDialog_editSecret {
             if (this.mode === "new") {
               try {
                 await this.writeToJson.write({
+                  type: "normal",
                   alias: this.alias,
                   secret: this.secret,
                   digit: this.digit,

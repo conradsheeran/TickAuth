@@ -20,16 +20,32 @@ import { SteamTOTP } from "steam-totp";
 import { CustomDialog_editSecret } from "uicomponent";
 import { hilog } from "@kit.PerformanceAnalysisKit";
 import { Constants } from "../common/Constants";
-import { Logger } from "utils";
+import { Logger, WriteToJson } from "utils";
+import { fileIo as fs, picker } from '@kit.CoreFileKit';
+import { BusinessError } from "@kit.BasicServicesKit";
+
 
 const TAG: string = "SteamPage"
 const logger = new Logger(getContext(this))
+
+interface ISteamSecretParams {
+  shared_secret: string;
+  identity_secret: string;
+  revocation_code: string;
+  steamid: string;
+  uri: string;
+  account_name: string;
+  device_id: string;
+}
 
 @Component
 export struct SteamPage {
   @Consume("pathStack") pathStack: NavPathStack;
   @State alias: string = "";
   @State timeOffset: number = NaN;
+
+  private context = getContext(this);
+  private writeToJson = new WriteToJson(this.context.filesDir + "/secret.json")
 
   private plus: SymbolGlyphModifier = new SymbolGlyphModifier($r('sys.symbol.plus'));
   private refreshSymbol: SymbolGlyphModifier = new SymbolGlyphModifier($r('sys.symbol.arrow_clockwise'));
@@ -58,14 +74,48 @@ export struct SteamPage {
         value: '取消',
         action: () => {
           hilog.debug(Constants.DOMAIN, TAG, "dialogControllerList: CANCEL button has been clicked.")
-        },
+        }
       },
       radioContent: [
         {
           title: '从 maFile 文件导入密钥（推荐）',
           action: () => {
             try {
-              //todo: 建议写入json文件的raw参数部分，json文件增加type参数
+              let documentSelectOptions = new picker.DocumentSelectOptions();
+              documentSelectOptions.maxSelectNumber = 1;
+              documentSelectOptions.fileSuffixFilters = ["maFile"];
+
+              let documentPicker = new picker.DocumentViewPicker(this.context);
+              documentPicker.select(documentSelectOptions).then((documentSelectResult: Array<string>) => {
+                fs.open(documentSelectResult[0], fs.OpenMode.READ_ONLY).then((file) => {
+                  fs.readText(file.path).then(async (content: string) => {
+                    let steamSecretParams: ISteamSecretParams = JSON.parse(content);
+                    await this.writeToJson.write({
+                      type: "steam",
+                      alias: steamSecretParams.account_name,
+                      secret: steamSecretParams.shared_secret,
+                      digit: 5,
+                      timeStep: 30,
+                      algorithm: "SHA1",
+                      raw: content
+                    });
+                  }).catch((e: BusinessError) => {
+                    promptAction.showToast({
+                      message: `错误：${e.message} (${TAG})`,
+                      duration: 2000
+                    });
+                    fs.close(file.fd)
+                    logger.error(Constants.DOMAIN, TAG, "Read JSON file fatal: %{public}s", String(e))
+                  })
+                })
+                hilog.info(Constants.DOMAIN, TAG, "WriteToJson Succeed")
+              }).catch((e: BusinessError) => {
+                promptAction.showToast({
+                  message: `错误：${e.message}(${TAG})`,
+                  duration: 2000
+                });
+                logger.error(Constants.DOMAIN, TAG, "documentViewPicker.select Fatal: %{public}s code: {public}d", e.message, e.code)
+              });
             } catch (e) {
               promptAction.showToast({
                 message: `错误：${e.message} (${TAG})`,

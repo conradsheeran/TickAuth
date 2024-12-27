@@ -40,7 +40,7 @@ export struct TOTP {
   @State CustomDialog_editTOTPItem_IsClosed: boolean = false;
   @State editTOTPItem_alias: string = '';
   @State editTOTPItem_secret: string = '';
-  @State editTOTPItem_item: ISecretItem = { alias: "", secret: "", digit: 6, timeStep: 30, algorithm: "SHA1", raw: "" }
+  @State editTOTPItem_item: ISecretItem = { type: "normal", alias: "", secret: "", digit: 6, timeStep: 30, algorithm: "SHA1", raw: "" }
 
   private writeToJson = new WriteToJson(getContext(this).filesDir + Constants.SECRET_FILE_DIR)
   private preferences = new Preference(getContext(this), "Preferences");
@@ -58,6 +58,7 @@ export struct TOTP {
 
         confirm: () => {
           this.writeToJson.edit(this.editTOTPItem_item, {
+            type: "normal",
             alias: this.editTOTPItem_alias,
             secret: this.editTOTPItem_item.secret,
             digit: this.editTOTPItem_item.digit,

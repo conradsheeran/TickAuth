@@ -25,6 +25,7 @@ const TAG: string = "WriteToJson";
 const logger = new Logger(getContext(this))
 
 export interface ISecretItem {
+  type: string;
   alias: string;
   secret: string;
   digit: number;
