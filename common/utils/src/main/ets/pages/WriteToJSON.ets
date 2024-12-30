@@ -220,7 +220,11 @@ export class WriteToJson {
     }
   }
 
-  async isExist(alias: string): Promise<boolean> {
+  async isExist(alias?: string, type?: string): Promise<boolean> {
+    if (!alias && !type) {
+      throw new Error("At least one of 'alias' or 'type' must be provided.");
+    }
+
     hilog.info(Constants.DOMAIN, TAG, "isExist mode start");
 
     try {
@@ -228,9 +232,22 @@ export class WriteToJson {
 
       if (fileExists) {
         const dataArray = await this.readJsonFile();
-        const exists = dataArray.some((item) => item.alias === alias);
 
-        hilog.info(Constants.DOMAIN, TAG, "isExist: Alias %{public}s is %{public}s", alias, exists ? "found" : "not found");
+        const exists = dataArray.some((item) => {
+          const aliasMatch = alias ? item.alias === alias : true;
+          const typeMatch = type ? item.type === type : true;
+          return aliasMatch && typeMatch;
+        });
+
+        hilog.info(
+          Constants.DOMAIN,
+          TAG,
+          "isExist: Matching item with alias '%{public}s' and type '%{public}s' is %{public}s",
+          alias || "(any)",
+          type || "(any)",
+          exists ? "found" : "not found"
+        );
+
         return exists;
       } else {
         hilog.info(Constants.DOMAIN, TAG, "isExist: File does not exist.");
@@ -241,5 +258,6 @@ export class WriteToJson {
       throw new Error(`isExist mode fatal: ${e}`);
     }
   }
+
 }
 

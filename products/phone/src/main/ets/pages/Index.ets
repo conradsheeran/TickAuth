@@ -309,7 +309,7 @@ struct Index {
       Tabs({ barPosition: BarPosition.End, index: this.currentIndex, controller: this.tabsController }) {
         TabContent() {
           if (this.hasKey) {
-            HomePage({ refresh: this.refresh, onForeground: this.onForeground });
+            HomePage({ pathStack: this.pathStack, refresh: this.refresh, onForeground: this.onForeground });
           } else {
             NoKeyInJSON({ hasKey: this.hasKey });
           }

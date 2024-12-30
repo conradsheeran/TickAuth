@@ -15,35 +15,33 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { fileIo as fs } from "@kit.CoreFileKit"
-import { SecretClass, WaitDeleteItemParam } from "../model/TOTPModel"
-import { BusinessError, pasteboard } from "@kit.BasicServicesKit";
-import { Logger, Preference, ISecretItem, WriteToJson } from "utils"
-import { GenerateTOTP, GetTOTPTimeInfo } from "totp"
-import { Constants } from "../common/Constants";
+import { SteamTOTP } from "steam-totp"
+import { ISecretItem, Preference, WriteToJson } from "utils";
+import { SecretClass, WaitDeleteItemParam } from "../model/SteamTOTPModel";
+import { CustomDialog_editSecret, CustomDialog_Warning } from "uicomponent"
 import { hilog } from "@kit.PerformanceAnalysisKit";
 import { promptAction } from "@kit.ArkUI";
-import { CustomDialog_editSecret, CustomDialog_Warning } from "uicomponent"
+import { Constants } from "../common/Constants";
+import { fileIo as fs } from "@kit.CoreFileKit"
 import { preferences } from "@kit.ArkData";
 import { pinyin4js as pinyin } from "@ohos/pinyin4js"
+import { BusinessError, pasteboard } from "@kit.BasicServicesKit";
 
-const TAG: string = "TOTPView";
-const logger = new Logger(getContext(this))
+const TAG: string = "SteamTOTPView"
 
 @Component
-export struct TOTP {
-  @LocalStorageLink("hasKey") hasKey: boolean = false;
-  @Link pathStack: NavPathStack;
-  @Link refresh: boolean;
-  @Link onForeground: boolean;
+export struct SteamTOTPView {
+  @LocalStorageLink("hasSteamKey") hasSteamKey: boolean = false;
+
+  // @Link refresh: boolean;
+  // @Link onForeground: boolean;  //todo: 修复前后台切换以及页面刷新
   @State TOTPList: Array<SecretClass> = [];
-  @State SteamTOTPList: Array<SecretClass> = [];
   @State CustomDialog_editTOTPItem_IsClosed: boolean = false;
   @State editTOTPItem_alias: string = '';
   @State editTOTPItem_secret: string = '';
-  @State editTOTPItem_item: ISecretItem = { type: "normal", alias: "", secret: "", digit: 6, timeStep: 30, algorithm: "SHA1", raw: "" }
+  @State editTOTPItem_item: ISecretItem = { type: "steam", alias: "", secret: "", digit: 5, timeStep: 30, algorithm: "SHA1", raw: "" }
 
-  private writeToJson = new WriteToJson(getContext(this).filesDir + Constants.SECRET_FILE_DIR)
+  private writeToJson = new WriteToJson(getContext(this).filesDir + "/secret.json")
   private preferences = new Preference(getContext(this), "Preferences");
   private oldPined: Array<string> = [];
   private deleteAlias: string = "";
@@ -59,7 +57,7 @@ export struct TOTP {
 
         confirm: () => {
           this.writeToJson.edit(this.editTOTPItem_item, {
-            type: "normal",
+            type: "steam",
             alias: this.editTOTPItem_alias,
             secret: this.editTOTPItem_item.secret,
             digit: this.editTOTPItem_item.digit,
@@ -67,7 +65,7 @@ export struct TOTP {
             algorithm: this.editTOTPItem_item.algorithm,
             raw: this.editTOTPItem_item.raw
           })
-          this.refresh = true;
+          // this.refresh = true;
           this.CustomDialog_editTOTPItem_IsClosed = true
         },
 
@@ -90,20 +88,20 @@ export struct TOTP {
     builder: CustomDialog_Warning(
       {
         cancel: () => {
-          hilog.info(Constants.DOMAIN, TAG, "warningDelete: The CANCEL button has been clicked");
+          // hilog.info(Constants.DOMAIN, TAG, "warningDelete: The CANCEL button has been clicked");
         },
 
         confirm: () => {
-          hilog.info(Constants.DOMAIN, TAG, "warningDelete: The Confirm button has been clicked")
+          // hilog.info(Constants.DOMAIN, TAG, "warningDelete: The Confirm button has been clicked")
 
           try {
             if (!this.oldDeleteItem.length) {
               this.preferences.put("WaitDeleteAlias", [new WaitDeleteItemParam(this.deleteAlias, Date.now())])
-              this.refresh = true
+              // this.refresh = true
             } else {
               let newDeleteItem: Array<WaitDeleteItemParam> = [...this.oldDeleteItem, new WaitDeleteItemParam(this.deleteAlias, Date.now())];
               this.preferences.put("WaitDeleteAlias", newDeleteItem)
-              this.refresh = true;
+              // this.refresh = true;
             }
 
             promptAction.showToast({
@@ -115,7 +113,7 @@ export struct TOTP {
               message: `错误：${e.message} (${TAG})`,
               duration: 2000
             });
-            logger.error(Constants.DOMAIN, TAG, "warningDelete: %{public}s, %{public}d", e.message, e.code)
+            // logger.error(Constants.DOMAIN, TAG, "warningDelete: %{public}s, %{public}d", e.message, e.code)
           }
         },
 
@@ -140,7 +138,7 @@ export struct TOTP {
         if (value.time <= Date.now()) {
           this.writeToJson.remove(value.alias).then((isNull: boolean) => {
             if (!isNull) {
-              this.hasKey = isNull;
+              this.hasSteamKey = isNull;
             }
           })
           this.oldDeleteItem.splice(index, 1)
@@ -148,7 +146,7 @@ export struct TOTP {
       })
       await this.preferences.put("WaitDeleteAlias", this.oldDeleteItem)
     } catch (e) {
-      logger.error(Constants.DOMAIN, TAG, "aboutToAppear: WaitDeleteAlias fatal, %{public}s", String(e))
+      // logger.error(Constants.DOMAIN, TAG, "aboutToAppear: WaitDeleteAlias fatal, %{public}s", String(e))
     }
 
     try {
@@ -158,25 +156,23 @@ export struct TOTP {
         message: `错误：${e.message} (${TAG})`,
         duration: 2000
       });
-      logger.error(Constants.DOMAIN, TAG, "GetSecretFromJson fatal: %{public}s", String(e))
+      // logger.error(Constants.DOMAIN, TAG, "GetSecretFromJson fatal: %{public}s", String(e))
     }
 
     // 重置刷新控制器
     this.oldPined = await this.preferences.get("PinedAlias", []) as Array<string>;
-    this.refresh = false;
-    this.onForeground = false;
+    // this.refresh = false;
+    // this.onForeground = false;
   }
 
   async GetSecretFromJson() {
     hilog.info(Constants.DOMAIN, TAG, "GetSecretFromJson Start")
 
-    const filePath = getContext(this).filesDir + Constants.SECRET_FILE_DIR
+    const filePath = getContext(this).filesDir + "/secret.json"
     const file = (await fs.open(filePath, fs.OpenMode.READ_ONLY));
-
     await fs.readText(file.path).then(async (value: string) => {
       const content: ISecretItem[] =  JSON.parse(value.replace(/[\u0000-\u001F\u007F-\u009F]/g, "").trim())
-      this.TOTPList = content.filter(item => item.type === "normal") as SecretClass[];
-      this.SteamTOTPList = content.filter(item => item.type === "steam") as SecretClass[];
+      this.TOTPList = content.filter(item => item.type === "steam") as SecretClass[];
       fs.close(file.fd);
 
       this.preferences.get("按字母排序", true).then((value: preferences.ValueType) => {
@@ -219,45 +215,21 @@ export struct TOTP {
       hilog.info(Constants.DOMAIN, TAG, "GetSecretFromJson Succeed")
     }).catch((e: BusinessError) => {
       fs.close(file.fd)
-      logger.error(Constants.DOMAIN, TAG, "Read JSON file fatal: %{public}s", String(e))
+      console.error("!!!!!!!!!!!!!!"+ `${String(e)}`)
+      // logger.error(Constants.DOMAIN, TAG, "Read JSON file fatal: %{public}s", String(e))
     })
   }
 
   build() {
     Column() {
-      List({ space: Constants.TOTPVIEW_LIST_SPACE }) {
-        ForEach(this.SteamTOTPList, (item: SecretClass) => {
-          ListItem() {
-            if (this.oldDeleteItem.some(waitDelete => waitDelete.alias === item.alias)) {
-              SteamTOTPItem({ pathStack: this.pathStack, steamTOTPItem: item })
-                .borderWidth(2)
-                .borderRadius($r('app.float.BorderRadius'))
-                .borderColor($r('app.color.TOTPView_ListItem_deleteButton'))
-            } else if (this.oldPined.some(oldPinedItem => oldPinedItem === item.alias)) {
-              SteamTOTPItem({ pathStack: this.pathStack, steamTOTPItem: item })
-                .borderWidth(1)
-                .borderRadius($r('app.float.BorderRadius'))
-                .borderColor("#fecc11")
-            } else {
-              SteamTOTPItem({ pathStack: this.pathStack, steamTOTPItem: item })
-            }
-          }
-          .swipeAction({
-            end: {
-              builder: () => {
-                this.itemEnd(this.TOTPList.indexOf(item), item.alias, item);
-              }
-            }
-          });
-        }, (item: SecretClass) => item.alias)
-
+      List({ space: 12 }) {
         ForEach(this.TOTPList, (item: SecretClass) => {
           ListItem() {
             if (this.oldDeleteItem.some(waitDelete => waitDelete.alias === item.alias)) {
               TOTPItem({ totpItem: item })
                 .borderWidth(2)
                 .borderRadius($r('app.float.BorderRadius'))
-                .borderColor($r('app.color.TOTPView_ListItem_deleteButton'))
+                .borderColor(16)
             } else if (this.oldPined.some(oldPinedItem => oldPinedItem === item.alias)) {
               TOTPItem({ totpItem: item })
                 .borderWidth(1)
@@ -308,17 +280,17 @@ export struct TOTP {
       try {
         if (!this.oldPined.length) {
           this.preferences.put("PinedAlias", [alias])
-          this.refresh = true
+          // this.refresh = true
         } else {
           if (this.oldPined.some(item => item === alias)) {
             const index = this.oldPined.indexOf(alias);
             this.oldPined.splice(index, 1)
             this.preferences.put("PinedAlias", this.oldPined)
-            this.refresh = true;
+            // this.refresh = true;
           } else {
             let newPined: Array<string> = [...this.oldPined, alias];
             this.preferences.put("PinedAlias", newPined)
-            this.refresh = true;
+            // this.refresh = true;
           }
         }
       } catch (e) {
@@ -326,8 +298,9 @@ export struct TOTP {
           message: `错误：${e.message} (${TAG})`,
           duration: 2000
         });
-        logger.error(Constants.DOMAIN, TAG, "Pined: %{public}s, %{public}d", e.message, e.code)
+        // logger.error(Constants.DOMAIN, TAG, "Pined: %{public}s, %{public}d", e.message, e.code)
       }
+
     })
 
     // 编辑按钮
@@ -355,7 +328,7 @@ export struct TOTP {
           message: `错误：${e.message} (${TAG})`,
           duration: 2000
         });
-        logger.error(Constants.DOMAIN, TAG, "editTOTPItem_Secret: %{public}s, %{public}d", e.message, e.code)
+        // logger.error(Constants.DOMAIN, TAG, "editTOTPItem_Secret: %{public}s, %{public}d", e.message, e.code)
       }
     })
 
@@ -384,14 +357,14 @@ export struct TOTP {
           const index = this.oldDeleteItem.findIndex(item => item.alias === this.deleteAlias);
           this.oldDeleteItem.splice(index, 1)
           this.preferences.put("WaitDeleteAlias", this.oldDeleteItem)
-          this.refresh = true;
+          // this.refresh = true;
         }
       } catch (e) {
         promptAction.showToast({
           message: `错误：${e.message} (${TAG})`,
           duration: 2000
         });
-        logger.error(Constants.DOMAIN, TAG, "warningDelete: %{public}s, %{public}d", e.message, e.code)
+        // logger.error(Constants.DOMAIN, TAG, "warningDelete: %{public}s, %{public}d", e.message, e.code)
       }
     })
   }
@@ -402,21 +375,29 @@ struct TOTPItem {
   @Prop totpItem: SecretClass;
   @State code: string = '';
   @State totalTime: number = this.totpItem.timeStep;
-  @State currentRemain: number = GetTOTPTimeInfo(this.totpItem.timeStep);
+  @State currentRemain: number = this.GetTOTPTimeInfo(this.totpItem.timeStep);
 
   private gradientColor: LinearGradient = new LinearGradient([{ color: $r('app.color.TOTPView_ListItem_Progress_end'), offset: 0.2 },
-                                                              { color: $r('app.color.TOTPView_ListItem_Progress_start'), offset: 1.0 }])
+    { color: $r('app.color.TOTPView_ListItem_Progress_start'), offset: 1.0 }])
+
+  private GetTOTPTimeInfo(
+    timeStep: number = 30,
+    epoch: number = Math.floor(Date.now() / 1000)
+  ): number {
+    const timeRemaining = timeStep - (epoch % timeStep);
+    return timeRemaining;
+  }
 
   private generateTOTP() {
-    GenerateTOTP(this.totpItem.secret, this.totpItem.digit, this.totpItem.timeStep, this.totpItem.algorithm).then((result) => {
-      this.code = result.code;
+    SteamTOTP.generateAuthCode(this.totpItem.secret).then((result) => {
+      this.code = result;
       hilog.info(Constants.DOMAIN, TAG, "GenerateTOTP(%{public}s) Succeed", this.totpItem.alias);
     }).catch((e: BusinessError) => {
       promptAction.showToast({
         message: `错误：${e.message} (${TAG})`,
         duration: 2000
       });
-      logger.error(Constants.DOMAIN, TAG, "GenerateTOTP fatal: %{public}s", String(e));
+      // logger.error(Constants.DOMAIN, TAG, "GenerateTOTP fatal: %{public}s", String(e));
     });
   }
 
@@ -435,27 +416,21 @@ struct TOTPItem {
         message: `错误：${e.message} (${TAG})`,
         duration: 2000
       });
-      logger.error(Constants.DOMAIN, TAG, "Get the TOTP time parameter fatal: %{public}s", String(e));
+      // logger.error(Constants.DOMAIN, TAG, "Get the TOTP time parameter fatal: %{public}s", String(e));
     }
   }
 
   build() {
     Row() {
       Column() {
-        Row() {
-          Text(this.totpItem.alias)
-            .fontSize($r('app.float.TOTPView_ListItem_Alias_fontsize'))
-            .textAlign(TextAlign.Start)
-            .textOverflow({ overflow: TextOverflow.Ellipsis })
-            .maxLines(Constants.TOTPVIEW_LISTITEM_MAXLINE)
-            .transition(TransitionEffect.OPACITY.animation({ duration: Constants.ANIMATION_DURING }))
-
-          SymbolGlyph($r('sys.symbol.key_horizontal'))
-            .fontSize(18)
-            .padding({ left: 8 })
-        }
-        .height(Constants.TOTPVIEW_LISTITEM_TOTP_HEIGHT)
-        .width(Constants.TOTPVIEW_LISTITEM_TOTP_WIDTH)
+        Text(this.totpItem.alias)
+          .height(Constants.TOTPVIEW_LISTITEM_TOTP_HEIGHT)
+          .width(Constants.TOTPVIEW_LISTITEM_TOTP_WIDTH)
+          .fontSize($r('app.float.TOTPView_ListItem_Alias_fontsize'))
+          .textAlign(TextAlign.Start)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+          .maxLines(Constants.TOTPVIEW_LISTITEM_MAXLINE)
+          .transition(TransitionEffect.OPACITY.animation({ duration: Constants.ANIMATION_DURING }))
 
         Text(this.code)
           .height(Constants.TOTPVIEW_LISTITEM_TOTP_HEIGHT)
@@ -491,73 +466,6 @@ struct TOTPItem {
         message: `验证码（${this.totpItem.alias}）已复制`,
         duration: 2000
       });
-    })
-  }
-}
-
-@Component
-struct SteamTOTPItem {
-  @Prop steamTOTPItem: SecretClass;
-  @Link pathStack: NavPathStack;
-
-  build() {
-    Row() {
-      Column() {
-        Row() {
-          Text("Steam")
-            .fontSize($r('app.float.TOTPView_ListItem_Alias_fontsize'))
-            .textAlign(TextAlign.Start)
-            .textOverflow({ overflow: TextOverflow.Ellipsis })
-            .maxLines(Constants.TOTPVIEW_LISTITEM_MAXLINE)
-            .transition(TransitionEffect.OPACITY.animation({ duration: Constants.ANIMATION_DURING }))
-
-          Image($r('app.media.steam_logo_symbol'))
-            .size({ height: 16, width: 16 })
-            .margin({ left: 8 })
-        }
-        .height(Constants.TOTPVIEW_LISTITEM_TOTP_HEIGHT)
-        .width("80%")
-
-
-        Text(this.steamTOTPItem.alias)
-          .height(Constants.TOTPVIEW_LISTITEM_TOTP_HEIGHT)
-          .width("80%")
-          .fontSize(24)
-          .fontColor($r('app.color.TOTPView_ListItem_fontcolor'))
-          .textAlign(TextAlign.Start)
-          .textOverflow({ overflow: TextOverflow.Ellipsis })
-          .maxLines(Constants.TOTPVIEW_LISTITEM_MAXLINE)
-          .margin({ bottom: $r('app.float.TOTPView_ListItem_Secret_margin') })
-          .transition(TransitionEffect.OPACITY.animation({ duration: Constants.ANIMATION_DURING }))
-
-      }
-      .margin({ right: $r('app.float.TOTPView_ListItem_Text_margin') })
-
-      Blank()
-
-      SymbolGlyph($r('sys.symbol.chevron_right'))
-        .fontSize(30)
-        .fontWeight(FontWeight.Normal)
-        .fontColor([Color.Gray])
-        .margin({ right: 14 })
-        .alignSelf(ItemAlign.Center)
-    }
-    .width(Constants.TOTPVIEW_LISTITEM_WIDTH)
-    .height("11%")
-    .borderRadius($r('app.float.BorderRadius'))
-    .backgroundColor(Color.White)
-    .padding($r('app.float.TOTPView_ListItem_padding'))
-    .alignItems(VerticalAlign.Top)
-    .onClick(() => {
-      try {
-        this.pathStack.pushPath({ name: "SteamPage" })
-      } catch (e) {
-        promptAction.showToast({
-          message: `错误：${e.message} (${TAG})`,
-          duration: 2000
-        });
-        logger.error(Constants.DOMAIN, TAG, "pushPath(SteamPage) Fatal: %{public}s code: {public}d", e.message, e.code)
-      }
     })
   }
 }

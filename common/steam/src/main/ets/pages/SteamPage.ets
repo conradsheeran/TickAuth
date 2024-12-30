@@ -23,7 +23,7 @@ import { Constants } from "../common/Constants";
 import { Logger, WriteToJson } from "utils";
 import { fileIo as fs, picker } from '@kit.CoreFileKit';
 import { BusinessError } from "@kit.BasicServicesKit";
-
+import { SteamTOTPView } from "../view/SteamTOTPView";
 
 const TAG: string = "SteamPage"
 const logger = new Logger(getContext(this))
@@ -41,6 +41,7 @@ interface ISteamSecretParams {
 @Component
 export struct SteamPage {
   @Consume("pathStack") pathStack: NavPathStack;
+  @LocalStorageLink("hasSteamKey") hasSteamKey: boolean = false;
   @State alias: string = "";
   @State timeOffset: number = NaN;
 
@@ -99,6 +100,9 @@ export struct SteamPage {
                       algorithm: "SHA1",
                       raw: content
                     });
+                    fs.close(file.fd)
+                    this.hasSteamKey = true;
+                    //todo: 增加跳转TOTP界面
                   }).catch((e: BusinessError) => {
                     promptAction.showToast({
                       message: `错误：${e.message} (${TAG})`,
@@ -167,10 +171,22 @@ export struct SteamPage {
     }
   })
 
+  async aboutToAppear(): Promise<void> {
+    try {
+      this.hasSteamKey = await this.writeToJson.isExist(undefined, "steam");
+    } catch (e) {
+      logger.error(Constants.DOMAIN, TAG, "Detect whether to add a key fatal: %{public}s", String(e));
+    }
+  }
+
   build() {
     NavDestination() {
       Column() {
-        AddSteamTOTP()
+        if (this.hasSteamKey) {
+          SteamTOTPView()
+        } else {
+          AddSteamTOTP()
+        }
       }
       .width('100%')
       .height('100%')
