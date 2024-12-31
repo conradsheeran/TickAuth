@@ -226,31 +226,6 @@ export struct TOTP {
   build() {
     Column() {
       List({ space: Constants.TOTPVIEW_LIST_SPACE }) {
-        ForEach(this.SteamTOTPList, (item: SecretClass) => {
-          ListItem() {
-            if (this.oldDeleteItem.some(waitDelete => waitDelete.alias === item.alias)) {
-              SteamTOTPItem({ pathStack: this.pathStack, steamTOTPItem: item })
-                .borderWidth(2)
-                .borderRadius($r('app.float.BorderRadius'))
-                .borderColor($r('app.color.TOTPView_ListItem_deleteButton'))
-            } else if (this.oldPined.some(oldPinedItem => oldPinedItem === item.alias)) {
-              SteamTOTPItem({ pathStack: this.pathStack, steamTOTPItem: item })
-                .borderWidth(1)
-                .borderRadius($r('app.float.BorderRadius'))
-                .borderColor("#fecc11")
-            } else {
-              SteamTOTPItem({ pathStack: this.pathStack, steamTOTPItem: item })
-            }
-          }
-          .swipeAction({
-            end: {
-              builder: () => {
-                this.itemEnd(this.TOTPList.indexOf(item), item.alias, item);
-              }
-            }
-          });
-        }, (item: SecretClass) => item.alias)
-
         ForEach(this.TOTPList, (item: SecretClass) => {
           ListItem() {
             if (this.oldDeleteItem.some(waitDelete => waitDelete.alias === item.alias)) {
@@ -442,20 +417,14 @@ struct TOTPItem {
   build() {
     Row() {
       Column() {
-        Row() {
-          Text(this.totpItem.alias)
-            .fontSize($r('app.float.TOTPView_ListItem_Alias_fontsize'))
-            .textAlign(TextAlign.Start)
-            .textOverflow({ overflow: TextOverflow.Ellipsis })
-            .maxLines(Constants.TOTPVIEW_LISTITEM_MAXLINE)
-            .transition(TransitionEffect.OPACITY.animation({ duration: Constants.ANIMATION_DURING }))
-
-          SymbolGlyph($r('sys.symbol.key_horizontal'))
-            .fontSize(18)
-            .padding({ left: 8 })
-        }
-        .height(Constants.TOTPVIEW_LISTITEM_TOTP_HEIGHT)
-        .width(Constants.TOTPVIEW_LISTITEM_TOTP_WIDTH)
+        Text(this.totpItem.alias)
+          .height(Constants.TOTPVIEW_LISTITEM_TOTP_HEIGHT)
+          .width(Constants.TOTPVIEW_LISTITEM_TOTP_WIDTH)
+          .fontSize($r('app.float.TOTPView_ListItem_Alias_fontsize'))
+          .textAlign(TextAlign.Start)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+          .maxLines(Constants.TOTPVIEW_LISTITEM_MAXLINE)
+          .transition(TransitionEffect.OPACITY.animation({ duration: Constants.ANIMATION_DURING }))
 
         Text(this.code)
           .height(Constants.TOTPVIEW_LISTITEM_TOTP_HEIGHT)
@@ -491,73 +460,6 @@ struct TOTPItem {
         message: `验证码（${this.totpItem.alias}）已复制`,
         duration: 2000
       });
-    })
-  }
-}
-
-@Component
-struct SteamTOTPItem {
-  @Prop steamTOTPItem: SecretClass;
-  @Link pathStack: NavPathStack;
-
-  build() {
-    Row() {
-      Column() {
-        Row() {
-          Text("Steam")
-            .fontSize($r('app.float.TOTPView_ListItem_Alias_fontsize'))
-            .textAlign(TextAlign.Start)
-            .textOverflow({ overflow: TextOverflow.Ellipsis })
-            .maxLines(Constants.TOTPVIEW_LISTITEM_MAXLINE)
-            .transition(TransitionEffect.OPACITY.animation({ duration: Constants.ANIMATION_DURING }))
-
-          Image($r('app.media.steam_logo_symbol'))
-            .size({ height: 16, width: 16 })
-            .margin({ left: 8 })
-        }
-        .height(Constants.TOTPVIEW_LISTITEM_TOTP_HEIGHT)
-        .width("80%")
-
-
-        Text(this.steamTOTPItem.alias)
-          .height(Constants.TOTPVIEW_LISTITEM_TOTP_HEIGHT)
-          .width("80%")
-          .fontSize(24)
-          .fontColor($r('app.color.TOTPView_ListItem_fontcolor'))
-          .textAlign(TextAlign.Start)
-          .textOverflow({ overflow: TextOverflow.Ellipsis })
-          .maxLines(Constants.TOTPVIEW_LISTITEM_MAXLINE)
-          .margin({ bottom: $r('app.float.TOTPView_ListItem_Secret_margin') })
-          .transition(TransitionEffect.OPACITY.animation({ duration: Constants.ANIMATION_DURING }))
-
-      }
-      .margin({ right: $r('app.float.TOTPView_ListItem_Text_margin') })
-
-      Blank()
-
-      SymbolGlyph($r('sys.symbol.chevron_right'))
-        .fontSize(30)
-        .fontWeight(FontWeight.Normal)
-        .fontColor([Color.Gray])
-        .margin({ right: 14 })
-        .alignSelf(ItemAlign.Center)
-    }
-    .width(Constants.TOTPVIEW_LISTITEM_WIDTH)
-    .height("11%")
-    .borderRadius($r('app.float.BorderRadius'))
-    .backgroundColor(Color.White)
-    .padding($r('app.float.TOTPView_ListItem_padding'))
-    .alignItems(VerticalAlign.Top)
-    .onClick(() => {
-      try {
-        this.pathStack.pushPath({ name: "SteamPage" })
-      } catch (e) {
-        promptAction.showToast({
-          message: `错误：${e.message} (${TAG})`,
-          duration: 2000
-        });
-        logger.error(Constants.DOMAIN, TAG, "pushPath(SteamPage) Fatal: %{public}s code: {public}d", e.message, e.code)
-      }
     })
   }
 }

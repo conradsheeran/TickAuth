@@ -31,7 +31,7 @@ const TAG: string = "SteamTOTPView"
 
 @Component
 export struct SteamTOTPView {
-  @LocalStorageLink("hasSteamKey") hasSteamKey: boolean = false;
+  @State hasSteamKey: boolean = false;
 
   // @Link refresh: boolean;
   // @Link onForeground: boolean;  //todo: 修复前后台切换以及页面刷新
@@ -136,9 +136,10 @@ export struct SteamTOTPView {
       this.oldDeleteItem = await this.preferences.get("WaitDeleteAlias", []) as Array<WaitDeleteItemParam>;
       this.oldDeleteItem.forEach((value, index) => {
         if (value.time <= Date.now()) {
-          this.writeToJson.remove(value.alias).then((isNull: boolean) => {
+          this.writeToJson.remove(value.alias).then(async (isNull: boolean) => {
             if (!isNull) {
               this.hasSteamKey = isNull;
+              await this.preferences.put("hasSteamKey", isNull)
             }
           })
           this.oldDeleteItem.splice(index, 1)
@@ -423,14 +424,21 @@ struct TOTPItem {
   build() {
     Row() {
       Column() {
-        Text(this.totpItem.alias)
-          .height(Constants.TOTPVIEW_LISTITEM_TOTP_HEIGHT)
-          .width(Constants.TOTPVIEW_LISTITEM_TOTP_WIDTH)
-          .fontSize($r('app.float.TOTPView_ListItem_Alias_fontsize'))
-          .textAlign(TextAlign.Start)
-          .textOverflow({ overflow: TextOverflow.Ellipsis })
-          .maxLines(Constants.TOTPVIEW_LISTITEM_MAXLINE)
-          .transition(TransitionEffect.OPACITY.animation({ duration: Constants.ANIMATION_DURING }))
+        Row() {
+          Text("Steam 令牌")
+            .fontSize($r('app.float.TOTPView_ListItem_Alias_fontsize'))
+            .textAlign(TextAlign.Start)
+            .textOverflow({ overflow: TextOverflow.Ellipsis })
+            .maxLines(Constants.TOTPVIEW_LISTITEM_MAXLINE)
+            .transition(TransitionEffect.OPACITY.animation({ duration: Constants.ANIMATION_DURING }))
+
+          SymbolGlyph($r("sys.symbol.key_shield"))
+            .fontSize(19)
+            .fontWeight(FontWeight.Medium)
+            .margin({ left: 8 })
+        }
+        .height(Constants.TOTPVIEW_LISTITEM_TOTP_HEIGHT)
+        .width(Constants.TOTPVIEW_LISTITEM_TOTP_WIDTH)
 
         Text(this.code)
           .height(Constants.TOTPVIEW_LISTITEM_TOTP_HEIGHT)

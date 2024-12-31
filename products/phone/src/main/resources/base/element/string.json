@@ -55,6 +55,14 @@
     {
       "name": "UserAuthView_button",
       "value": "进行身份认证以进入"
+    },
+    {
+      "name": "Title_SteamPage",
+      "value": "Steam"
+    },
+    {
+      "name": "Title_Settings",
+      "value": "设置"
     }
   ]
 }

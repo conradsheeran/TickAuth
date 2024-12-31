@@ -21,12 +21,15 @@ import { preferences } from '@kit.ArkData';
 import { CustomDialog_disclaimer } from '../uicomponent/Disclaimer'
 import { HomePage, NoKeyInJSON } from "homepage"
 import { Settings } from "settings"
-import { WriteToJson, Logger, Preference, CatchSecretByScan } from "utils"
+import { WriteToJson, Logger, Preference, CatchSecretByScan, ISecretItem } from "utils"
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { Constants } from '../common/Constants';
 import { UserAuth } from '../model/UserAuth';
 import { UserAuthView } from '../view/UserAuth';
 import { CustomDialog_editSecret } from "uicomponent"
+import { SteamTOTPView } from 'steam/src/main/ets/view/SteamTOTPView';
+import { SecretClass } from 'homepage/src/main/ets/model/TOTPModel';
+import { fileIo as fs } from "@kit.CoreFileKit"
 
 const TAG: string = "Index"
 const logger = new Logger(getContext(this))
@@ -49,6 +52,8 @@ struct Index {
   @State currentIndex: number = 0;
   @State onForeground: boolean = false;
   @State isConfirm: boolean = false;
+  @State hasSteamKey: boolean = false;
+  @State TOTPList_Steam: Array<SecretClass> = [];
 
   // 弹窗控制器
   dialogControllerList: CustomDialogController = new CustomDialogController({
@@ -62,66 +67,8 @@ struct Index {
         },
       },
       radioContent: [
-        {
-          title: '扫码添加',
-          action: async () => {
-            try {
-              hilog.info(Constants.DOMAIN, TAG, "The ADD button was clicked")
-
-              CatchSecretByScan(this.context).then((value) => {
-                this.rawSecretParam = value.raw
-                const secretParam = value.SecretParams;
-                this.secret = secretParam.secret;
-                this.digit = secretParam.digits;
-                this.algorithm = secretParam.algorithm;
-                this.timeStep = secretParam.period;
-
-                hilog.info(Constants.DOMAIN, TAG, "The SECRET accepted: %{private}s", String(this.alias))
-
-                this.editTOTPItem.open()
-                hilog.info(Constants.DOMAIN, TAG, "The editTOTPItem DIALOG opened")
-              })
-
-              // 等待用户输入
-              while (!this.CustomDialog_editTOTPItemIsClosed) {
-                await new Promise<void>(resolve => setTimeout(resolve, 100));
-              }
-
-              if (this.isConfirm) {
-                hilog.debug(Constants.DOMAIN, TAG, "The edited alias is %{public}s", this.alias)
-
-                await this.writeToJson.write({
-                  type: "normal",
-                  alias: this.alias,
-                  secret: this.secret,
-                  digit: this.digit,
-                  timeStep: this.timeStep,
-                  algorithm: this.algorithm,
-                  raw: this.rawSecretParam
-                });
-                hilog.debug(Constants.DOMAIN, TAG, "WriteToJson completed", this.alias)
-
-                // 控制页面刷新
-                this.hasKey = true;
-                this.refresh = true;
-                this.CustomDialog_editTOTPItemIsClosed = false
-                logger.info(Constants.DOMAIN, TAG, "The SECRET(%{public}s) has been added", this.alias)
-              }
-            } catch (e) {
-              promptAction.showToast({
-                message: `错误：${e.message} (${TAG})`,
-                duration: 2000
-              });
-              logger.error(Constants.DOMAIN, TAG, "ADD button: %{public}s", String(e));
-            }
-          }
-        },
-        {
-          title: '手动输入 TOTP 验证码参数',
-          action: () => {
-            this.newTOTPItem.open()
-          }
-        },
+        this.addTOTPKeyByScan(),
+        this.addTOTPKeyByInput(),
         {
           title: '添加 Steam 手机令牌',
           action: () => {
@@ -136,6 +83,23 @@ struct Index {
             }
           }
         }
+      ]
+    })
+  })
+
+  dialogControllerList_withoutSteam: CustomDialogController = new CustomDialogController({
+    builder: SelectDialog({
+      title: '请选择一种添加方式',
+      selectedIndex: 3,
+      confirm: {
+        value: '取消',
+        action: () => {
+          hilog.debug(Constants.DOMAIN, TAG, "dialogControllerList: CANCEL button has been clicked.")
+        },
+      },
+      radioContent: [
+        this.addTOTPKeyByScan(),
+        this.addTOTPKeyByInput()
       ]
     })
   })
@@ -233,20 +197,147 @@ struct Index {
   private preferences = new Preference(this.context, "Preferences")
 
   // 标题栏
-  private TitleMenuItem: NavigationMenuItem = {
-    'value':"",
-    'symbolIcon': this.plus,
-    'action': () => {
-      this.dialogControllerList.open()
+  @Builder
+  Title() {
+    Row() {
+      if (this.currentIndex === 0) {
+        Text($r('app.string.Title')).fontSize(24).fontWeight(FontWeight.Bold)
+      } else if (this.currentIndex === 1) {
+        Text($r("app.string.Title_SteamPage")).fontSize(24).fontWeight(FontWeight.Bold)
+      } else {
+        Text($r("app.string.Title_Settings")).fontSize(24).fontWeight(FontWeight.Bold)
+      }
     }
+    .width("30%")
+    .height("100%")
+    .margin({ left: 18 })
+    .justifyContent(FlexAlign.Start)
+  }
+
+  @Builder
+  TitleMenuItem() {
+    Row() {
+      if (this.currentIndex === 0) {
+        Button({ type: ButtonType.Circle }) {
+          SymbolGlyph($r('sys.symbol.plus'))
+            .fontSize(24)
+            .fontColor([$r('sys.color.font_primary')])
+        }
+        .buttonStyle(ButtonStyleMode.NORMAL)
+        .size({ width: 40, height: 40 })
+        .onClick(() => {
+          if (this.hasSteamKey) {
+            this.dialogControllerList_withoutSteam.open()
+          } else {
+            this.dialogControllerList.open()
+          }
+        })
+      } else if (this.currentIndex === 1) {
+        Select([{ value: this.TOTPList_Steam[0].alias, icon: "" }])
+          .selected(0)
+          .value("账号")
+          .font({ size: 16, weight: 500 })
+          .fontColor($r('sys.color.font_primary'))
+          .selectedOptionFont({ size: 16, weight: 400 })
+          .optionFont({ size: 16, weight: 400 })
+          .space(8)
+          .arrowPosition(ArrowPosition.END)
+          .menuAlign(MenuAlignType.START, {dx:0, dy:0})
+          .optionWidth(200)
+          .optionHeight(300)
+          .onSelect((index:number, text?: string | undefined)=>{
+            // console.info('Select:' + index)
+            // this.index = index;
+            // if(text){
+            //   this.text = text;
+            // }
+          });
+      }
+    }
+    .width("60%")
+    .height("100%")
+    .margin({ right: 12 })
+    .justifyContent(FlexAlign.End)
   };
 
   // 导航栏
   private tabsController: TabsController = new TabsController()
+
+  private addTOTPKeyByInput(): SheetInfo {
+    return {
+      title: '手动输入 TOTP 验证码参数',
+      action: () => {
+        this.newTOTPItem.open();
+      }
+    };
+  }
+
+  private addTOTPKeyByScan(): SheetInfo {
+    return {
+      title: '扫码添加',
+      action: async () => {
+        try {
+          hilog.info(Constants.DOMAIN, TAG, "The ADD button was clicked");
+
+          CatchSecretByScan(this.context).then((value) => {
+            this.rawSecretParam = value.raw;
+            const secretParam = value.SecretParams;
+            this.secret = secretParam.secret;
+            this.digit = secretParam.digits;
+            this.algorithm = secretParam.algorithm;
+            this.timeStep = secretParam.period;
+
+            hilog.info(Constants.DOMAIN, TAG, "The SECRET accepted: %{private}s", String(this.alias));
+
+            this.editTOTPItem.open();
+            hilog.info(Constants.DOMAIN, TAG, "The editTOTPItem DIALOG opened");
+          });
+
+          // 等待用户输入
+          while (!this.CustomDialog_editTOTPItemIsClosed) {
+            await new Promise<void>(resolve => setTimeout(resolve, 100));
+          }
+
+          if (this.isConfirm) {
+            hilog.debug(Constants.DOMAIN, TAG, "The edited alias is %{public}s", this.alias);
+
+            await this.writeToJson.write({
+              type: "normal",
+              alias: this.alias,
+              secret: this.secret,
+              digit: this.digit,
+              timeStep: this.timeStep,
+              algorithm: this.algorithm,
+              raw: this.rawSecretParam
+            });
+            hilog.debug(Constants.DOMAIN, TAG, "WriteToJson completed", this.alias);
+
+            // 控制页面刷新
+            this.hasKey = true;
+            this.refresh = true;
+            this.CustomDialog_editTOTPItemIsClosed = false;
+            logger.info(Constants.DOMAIN, TAG, "The SECRET(%{public}s) has been added", this.alias);
+          }
+        } catch (e) {
+          promptAction.showToast({
+            message: `错误：${e.message} (${TAG})`,
+            duration: 2000
+          });
+          logger.error(Constants.DOMAIN, TAG, "ADD button: %{public}s", String(e));
+        }
+      }
+    };
+  }
+
   @Builder tabBuilder(targetIndex: number, selectedImg: Resource, normalImg: Resource, title?: Resource) {
     Column() {
-      SymbolGlyph(this.currentIndex === targetIndex ? selectedImg : normalImg)
-        .fontSize($r("app.float.Title"))
+      if (targetIndex === 1) {
+        Image(this.currentIndex === targetIndex ? selectedImg : normalImg)
+          .size({ height: 32, width: 32 })
+      } else {
+        SymbolGlyph(this.currentIndex === targetIndex ? selectedImg : normalImg)
+          .fontSize($r("app.float.Title"))
+      }
 
       /*Text(title)
         .fontColor(this.currentIndex === targetIndex ? '#1698CE' : '#6B6B6B')
@@ -283,11 +374,31 @@ struct Index {
       }
     });
 
+    this.preferences.get("hasSteamKey", false).then((value) => {
+      hilog.debug(Constants.DOMAIN, TAG, "The disclaimerIsConfirm is: %{public}s", value.toString())
+
+      if (value) {
+        this.hasSteamKey = value as boolean;
+      }
+    });
+
     // 校验 JSON 文件是否存在数据
     try {
-      this.hasKey = await this.writeToJson.hasSecret();
+      this.hasKey = await this.writeToJson.isExist(undefined, "normal");
     } catch (e) {
       logger.error(Constants.DOMAIN, TAG, "Detect whether to add a key fatal: %{public}s", String(e));
+    }
+
+    try {
+      const filePath = getContext(this).filesDir + "/secret.json"
+      const file = (await fs.open(filePath, fs.OpenMode.READ_ONLY));
+      await fs.readText(file.path).then(async (value: string) => {
+        const content: ISecretItem[] =  JSON.parse(value.replace(/[\u0000-\u001F\u007F-\u009F]/g, "").trim())
+        this.TOTPList_Steam = content.filter(item => item.type === "steam") as SecretClass[];
+        fs.close(file.fd);
+      })
+    } catch (e) {
+      // logger.error(Constants.DOMAIN, TAG, "Detect whether to add a key fatal: %{public}s", String(e));
     }
   }
 
@@ -318,10 +429,19 @@ struct Index {
         .backgroundColor($r('app.color.background'))
         .padding({ top: 18 });
 
+        if (this.hasSteamKey) {
+          TabContent() {
+            SteamTOTPView()
+          }
+          .tabBar(this.tabBuilder(1, $r('app.media.steam_logo_symbol_fill'), $r("app.media.steam_logo_symbol")))
+          .backgroundColor($r('app.color.background'))
+          .padding({ top: 36 });
+        }
+
         TabContent() {
           Settings();
         }
-        .tabBar(this.tabBuilder(1, $r('sys.symbol.gearshape_fill'), $r('sys.symbol.gearshape')))
+        .tabBar(this.tabBuilder(2, $r('sys.symbol.gearshape_fill'), $r('sys.symbol.gearshape')))
         .backgroundColor($r('app.color.background'));
       }
       .scrollable(false)
@@ -336,7 +456,7 @@ struct Index {
       });
     }
     .mode(NavigationMode.Auto)
-    .title($r('app.string.Title'),
+    .title(this.Title(),
       {
         'barStyle': BarStyle.STACK,
         'backgroundColor': $r('app.color.titleBar'),
@@ -344,7 +464,7 @@ struct Index {
     )
     .titleMode(NavigationTitleMode.Mini)
     .hideBackButton(true)
-    .menus([this.TitleMenuItem])
+    .menus(this.TitleMenuItem())
     .backgroundColor($r('app.color.background'))
   }
 }
