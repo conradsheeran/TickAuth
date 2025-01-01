@@ -96,10 +96,8 @@ struct ImportAndExport {
               let documentPicker = new picker.DocumentViewPicker(this.context);
               documentPicker.select(documentSelectOptions).then((documentSelectResult: Array<string>) => {
                 fs.open(documentSelectResult[0], fs.OpenMode.READ_ONLY).then((file) => {
-                  let arrayBuffer = new ArrayBuffer(12288);
-                  fs.read(file.fd, arrayBuffer).then((readLen) => {
-                    let buf = buffer.from(arrayBuffer, 0, readLen);
-                    this.writeToJson.append(bufferToString(new Uint8Array(buf.buffer)).replace(/[\u0000-\u001F\u007F-\u009F]/g, "").trim()).then(() => {
+                  fs.readText(file.path).then((content) => {
+                    this.writeToJson.append(content.replace(/[\u0000-\u001F\u007F-\u009F]/g, "").trim()).then(() => {
                       router.pushUrl({
                         url: 'pages/Index'
                       }, router.RouterMode.Standard, (e) => {
