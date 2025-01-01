@@ -202,7 +202,7 @@ struct Index {
     Row() {
       if (this.currentIndex === 0) {
         Text($r('app.string.Title')).fontSize(24).fontWeight(FontWeight.Bold)
-      } else if (this.currentIndex === 1) {
+      } else if (this.currentIndex === 1 && this.hasSteamKey === true) {
         Text($r("app.string.Title_SteamPage")).fontSize(24).fontWeight(FontWeight.Bold)
       } else {
         Text($r("app.string.Title_Settings")).fontSize(24).fontWeight(FontWeight.Bold)
@@ -232,7 +232,7 @@ struct Index {
             this.dialogControllerList.open()
           }
         })
-      } else if (this.currentIndex === 1) {
+      } else if (this.currentIndex === 1 && this.hasSteamKey === true) {
         Select([{ value: this.TOTPList_Steam[0].alias, icon: "" }])
           .selected(0)
           .value("账号")
