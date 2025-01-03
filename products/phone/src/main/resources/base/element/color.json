@@ -6,7 +6,7 @@
     },
     {
       "name": "background",
-      "value": "#F8F4ED"
+        "value": "#F8F4ED"
     },
     {
       "name": "titleBar",

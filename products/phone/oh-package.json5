@@ -11,6 +11,6 @@
     "homepage": "file:../../features/homepage",
     "settings": "file:../../features/settings",
     "uicomponent": "file:../../common/uicomponent",
-    "steam": "file:../../common/steam"
+    "steam": "file:../../features/steam"
   }
 }

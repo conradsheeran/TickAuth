@@ -20,10 +20,10 @@ import { SteamTOTP } from "steam-totp";
 import { CustomDialog_editSecret } from "uicomponent";
 import { hilog } from "@kit.PerformanceAnalysisKit";
 import { Constants } from "../common/Constants";
-import { Logger, WriteToJson } from "utils";
+import { Logger, Preference, WriteToJson } from "utils";
 import { fileIo as fs, picker } from '@kit.CoreFileKit';
 import { BusinessError } from "@kit.BasicServicesKit";
-
+import { SteamTOTPView } from "../view/SteamTOTPView";
 
 const TAG: string = "SteamPage"
 const logger = new Logger(getContext(this))
@@ -41,11 +41,13 @@ interface ISteamSecretParams {
 @Component
 export struct SteamPage {
   @Consume("pathStack") pathStack: NavPathStack;
+  @State hasSteamKey: boolean = false;
   @State alias: string = "";
   @State timeOffset: number = NaN;
 
   private context = getContext(this);
   private writeToJson = new WriteToJson(this.context.filesDir + "/secret.json")
+  private preferences = new Preference(getContext(this), "Preferences");
 
   private plus: SymbolGlyphModifier = new SymbolGlyphModifier($r('sys.symbol.plus'));
   private refreshSymbol: SymbolGlyphModifier = new SymbolGlyphModifier($r('sys.symbol.arrow_clockwise'));
@@ -99,6 +101,10 @@ export struct SteamPage {
                       algorithm: "SHA1",
                       raw: content
                     });
+                    fs.close(file.fd)
+                    this.hasSteamKey = true;
+                    this.preferences.put("hasSteamKey", true)
+                    //todo: 增加跳转TOTP界面
                   }).catch((e: BusinessError) => {
                     promptAction.showToast({
                       message: `错误：${e.message} (${TAG})`,
@@ -167,10 +173,22 @@ export struct SteamPage {
     }
   })
 
+  async aboutToAppear(): Promise<void> {
+    try {
+      this.hasSteamKey = await this.preferences.get("hasSteamKey", false) as boolean;
+    } catch (e) {
+      logger.error(Constants.DOMAIN, TAG, "Detect whether to add a key fatal: %{public}s", String(e));
+    }
+  }
+
   build() {
     NavDestination() {
       Column() {
-        AddSteamTOTP()
+        if (this.hasSteamKey) {
+          SteamTOTPView()
+        } else {
+          AddSteamTOTP()
+        }
       }
       .width('100%')
       .height('100%')

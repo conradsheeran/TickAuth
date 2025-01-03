@@ -34,7 +34,7 @@ git clone https://github.com/conradsheeran/TickAuth.git
 - [x] ~~实现倒计时动画~~
 - [x] ~~支持对密钥的导出与导入~~
 - [ ] 使用华为账号实现云端同步
-- [ ] 支持添加 Steam 令牌
+- [x] ~~支持添加 Steam 令牌~~
 - [ ] 增加对平板、可穿戴设备的支持
 
 ## 屏幕截图：

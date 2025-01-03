@@ -6,7 +6,7 @@
   "author": "Yang He",
   "license": "GPL-3.0",
   "dependencies": {
-    "utils": "file:../utils",
-    'uicomponent': "file:../uicomponent"
+    "utils": "file:../../common/utils",
+    'uicomponent': "file:../../common/uicomponent"
   }
 }

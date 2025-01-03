@@ -98,14 +98,21 @@ export struct CustomDialog_editSecret {
       .onChange(async (input) => {
         if (this.mode === "edit") {
           hilog.debug(Constants.DOMAIN, TAG, "The Input value: %{public}s", input);
-          if (!(await this.writeToJson.isExist(input))) {
+          if (!(await this.writeToJson.isExist(input, "normal"))) {
             this.alias = input;
             this.isConfirm = true;
           } else {
             this.isConfirm = false
           }
-        } else if (this.mode === "new" || this.mode === "newSteamCode") {
-          if (!(await this.writeToJson.isExist(input))) {
+        } else if (this.mode === "new") {
+          if (!(await this.writeToJson.isExist(input, "normal"))) {
+            this.alias = input;
+            this.isConfirm = true;
+          } else {
+            this.isConfirm = false
+          }
+        } else if (this.mode === "newSteamCode") {
+          if (!(await this.writeToJson.isExist(input, "steam"))) {
             this.alias = input;
             this.isConfirm = true;
           } else {
