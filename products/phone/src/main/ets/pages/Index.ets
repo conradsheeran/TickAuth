@@ -72,15 +72,19 @@ struct Index {
         {
           title: '添加 Steam 手机令牌',
           action: () => {
-            try {
-              this.pathStack.pushPath({ name: "SteamPage" })
-            } catch (e) {
+            // try {
+            //   this.pathStack.pushPath({ name: "SteamPage" })
+            // } catch (e) {
+            //   promptAction.showToast({
+            //     message: `错误：${e.message} (${TAG})`,
+            //     duration: 2000
+            //   });
+            //   logger.error(Constants.DOMAIN, TAG, "pushPath(SteamPage) Fatal: %{public}s code: {public}d", e.message, e.code)
+            // }
               promptAction.showToast({
-                message: `错误：${e.message} (${TAG})`,
+                message: "部分问题暂未修复，下个版本将修复支持",
                 duration: 2000
               });
-              logger.error(Constants.DOMAIN, TAG, "pushPath(SteamPage) Fatal: %{public}s code: {public}d", e.message, e.code)
-            }
           }
         }
       ]
