@@ -16,7 +16,7 @@
  */
 
 import  { picker } from '@kit.CoreFileKit';
-import { bufferToString, Logger, WriteToJson } from "utils";
+import { bufferToString, JumpToApp, Logger, WriteToJson } from "utils";
 import { BusinessError } from '@kit.BasicServicesKit';
 import { fileIo as fs } from '@kit.CoreFileKit';
 import { common } from '@kit.AbilityKit';
@@ -35,6 +35,7 @@ struct ImportAndExport {
 
   private context = getContext(this) as common.UIAbilityContext;
   private writeToJson = new WriteToJson(this.context.filesDir + Constants.SECRET_FILE_DIR)
+  private jumpToApp = new JumpToApp(this.context)
 
   build() {
     NavDestination() {
@@ -95,10 +96,8 @@ struct ImportAndExport {
               let documentPicker = new picker.DocumentViewPicker(this.context);
               documentPicker.select(documentSelectOptions).then((documentSelectResult: Array<string>) => {
                 fs.open(documentSelectResult[0], fs.OpenMode.READ_ONLY).then((file) => {
-                  let arrayBuffer = new ArrayBuffer(12288);
-                  fs.read(file.fd, arrayBuffer).then((readLen) => {
-                    let buf = buffer.from(arrayBuffer, 0, readLen);
-                    this.writeToJson.append(bufferToString(new Uint8Array(buf.buffer)).replace(/[\u0000-\u001F\u007F-\u009F]/g, "").trim()).then(() => {
+                  fs.readText(file.path).then((content) => {
+                    this.writeToJson.append(content.replace(/[\u0000-\u001F\u007F-\u009F]/g, "").trim()).then(() => {
                       router.pushUrl({
                         url: 'pages/Index'
                       }, router.RouterMode.Standard, (e) => {
@@ -147,6 +146,7 @@ struct ImportAndExport {
                 fs.open(documentSaveResult[0], fs.OpenMode.READ_WRITE).then((file) => {
                   fs.copyFile(this.context.filesDir + Constants.SECRET_FILE_DIR, file.fd).then(() => {
                     fs.close(file.fd)
+                    this.jumpToApp.app("com.huawei.hmos.files", "EntryAbility")
                     hilog.debug(Constants.DOMAIN, TAG, "copyFile: Export Succeed")
                   }).catch((e: BusinessError) => {
                     promptAction.showToast({
@@ -182,6 +182,7 @@ struct ImportAndExport {
               fs.open(documentSaveResult[0], fs.OpenMode.READ_WRITE).then((file) => {
                 fs.copyFile(this.context.filesDir + "/log.txt", file.fd).then(() => {
                   fs.close(file.fd)
+                  this.jumpToApp.app("com.huawei.hmos.files", "EntryAbility")
                   hilog.debug(Constants.DOMAIN, TAG, "copyFile: Export Succeed")
                 }).catch((e: BusinessError) => {
                   promptAction.showToast({
@@ -206,7 +207,7 @@ struct ImportAndExport {
       .justifyContent(FlexAlign.Center)
     }
     .backgroundColor($r('app.color.background'))
-    .title('导入和导出')
+    .title('导入和导出', { backgroundColor: "#93B5CF" })
     .onBackPressed(() => {
       this.pathStack.pop()
       return true;

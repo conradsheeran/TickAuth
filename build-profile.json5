@@ -73,6 +73,10 @@
     {
       "name": "uicomponent",
       "srcPath": "./common/uicomponent",
+    },
+    {
+      "name": "steam",
+      "srcPath": "./features/steam"
     }
   ]
 }

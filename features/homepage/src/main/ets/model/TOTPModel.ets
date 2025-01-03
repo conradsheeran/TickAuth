@@ -16,17 +16,29 @@
  */
 
 export class SecretClass {
+  type: string = "";
   alias: string = "";
   secret: string = "";
   digit: number = 6;
   timeStep: number = 30;
   algorithm: string = "SHA1";
 
-  constructor(alias: string, secret: string, digit: number, timeStep: number, algorithm: string ) {
+  constructor(type: string, alias: string, secret: string, digit: number, timeStep: number, algorithm: string) {
+    this.type = type;
     this.alias = alias;
     this.secret = secret;
     this.digit = digit;
     this.timeStep = timeStep;
     this.algorithm = algorithm;
+  }
+}
+
+export class WaitDeleteItemParam {
+  alias: string = "";
+  time: number = 0;
+
+  constructor(alias: string, clickTime: number ) {
+    this.alias = alias;
+    this.time = clickTime + 86400000
   }
 }

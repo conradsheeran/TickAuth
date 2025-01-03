@@ -25,9 +25,9 @@ export {
   ProcessSecret,
   SecretParamsToUint8Array,
   Uint8ArrayToSecretParams,
-  SecretParams } from './src/main/ets/pages/ProcessSecret'
+  ISecretParams } from './src/main/ets/pages/ProcessSecret'
 
-export { WriteToJson, SecretItem } from './src/main/ets/pages/WriteToJSON'
+export { WriteToJson, ISecretItem } from './src/main/ets/pages/WriteToJSON'
 
 export { Logger } from './src/main/ets/pages/Logger'
 

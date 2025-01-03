@@ -1,0 +1,12 @@
+{
+  "routerMap": [
+    {
+      "name": "SteamPage",
+      "pageSourceFile": "src/main/ets/pages/SteamPage.ets",
+      "buildFunction": "SteamPageBuilder",
+      "data": {
+        "description": "This is SteamPage"
+      }
+    }
+  ]
+}

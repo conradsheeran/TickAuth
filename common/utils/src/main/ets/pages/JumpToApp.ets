@@ -16,6 +16,10 @@
  */
 
 import { Want, common } from '@kit.AbilityKit';
+import { hilog } from '@kit.PerformanceAnalysisKit';
+import { Constants } from '../common/Constants';
+
+const TAG = "JumpToApp"
 
 export class JumpToApp {
   private context: common.UIAbilityContext;
@@ -30,6 +34,7 @@ export class JumpToApp {
       abilityName: abilityName,
       uri: uri
     };
+    hilog.debug(Constants.DOMAIN, TAG, "app: Jump to %{public}s, abilityName: %{public}s, uri: %{public}s", bundleName, abilityName, uri)
     this.context.startAbility(want);
   }
 
@@ -39,6 +44,7 @@ export class JumpToApp {
       entities: ['entity.system.browsable'],
       uri: uriContent
     };
+    hilog.debug(Constants.DOMAIN, TAG, "browser: Jump to Browser")
     this.context.startAbility(want)
   }
 }

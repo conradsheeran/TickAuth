@@ -28,7 +28,7 @@ function leftPad(str: string, len: number, padChar: string): string {
   return str.length >= len ? str : padChar.repeat(len - str.length) + str;
 }
 
-interface TOTPItem {
+interface ITOTPItem {
   code: string;
   timeStep: number;
   timeRemaining: number;
@@ -66,7 +66,7 @@ export async function GenerateTOTP(
       code: paddedOtp,
       timeStep: timeStep,
       timeRemaining: timeRemaining
-    } as TOTPItem);
+    } as ITOTPItem);
   } catch (e) {
     logger.fatal(Constants.DOMAIN, TAG, "GenerateTOTP fatal: %{public}s", String(e))
     throw new Error('Failed to GenerateTOTP');

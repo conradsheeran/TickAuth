@@ -24,7 +24,8 @@ import { Constants } from '../common/Constants';
 const TAG: string = "WriteToJson";
 const logger = new Logger(getContext(this))
 
-export interface SecretItem {
+export interface ISecretItem {
+  type: string;
   alias: string;
   secret: string;
   digit: number;
@@ -40,8 +41,8 @@ export class WriteToJson {
     this.filePath = filePath;
   }
 
-  private async readJsonFile(): Promise<SecretItem[]> {
-    let dataArray: SecretItem[] = [];
+  private async readJsonFile(): Promise<ISecretItem[]> {
+    let dataArray: ISecretItem[] = [];
 
     try {
       const res: boolean = await fs.access(this.filePath);
@@ -59,7 +60,7 @@ export class WriteToJson {
     return dataArray;
   }
 
-  private async writeJsonFile(dataArray: SecretItem[]): Promise<void> {
+  private async writeJsonFile(dataArray: ISecretItem[]): Promise<void> {
     const fd = (
       await fs.open(this.filePath, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE | fs.OpenMode.TRUNC)
     ).fd;
@@ -67,7 +68,7 @@ export class WriteToJson {
     fs.close(fd)
   }
 
-  async write(newItem: SecretItem): Promise<void> {
+  async write(newItem: ISecretItem): Promise<void> {
     hilog.info(Constants.DOMAIN, TAG, "Write mode start");
 
     try {
@@ -106,7 +107,7 @@ export class WriteToJson {
         throw new Error("Provided string content must be a JSON array.");
       }
 
-      newContent.forEach((newItem: SecretItem) => {
+      newContent.forEach((newItem: ISecretItem) => {
         const index = dataArray.findIndex((item) => item.alias === newItem.alias);
 
         if (index !== -1) {
@@ -131,7 +132,7 @@ export class WriteToJson {
     }
   }
 
-  async edit(oldItem: SecretItem, newItem: SecretItem): Promise<void> {
+  async edit(oldItem: ISecretItem, newItem: ISecretItem): Promise<void> {
     hilog.info(Constants.DOMAIN, TAG, "Edit mode start");
 
     try {
@@ -219,7 +220,11 @@ export class WriteToJson {
     }
   }
 
-  async isExist(alias: string): Promise<boolean> {
+  async isExist(alias?: string, type?: string): Promise<boolean> {
+    if (!alias && !type) {
+      throw new Error("At least one of 'alias' or 'type' must be provided.");
+    }
+
     hilog.info(Constants.DOMAIN, TAG, "isExist mode start");
 
     try {
@@ -227,9 +232,22 @@ export class WriteToJson {
 
       if (fileExists) {
         const dataArray = await this.readJsonFile();
-        const exists = dataArray.some((item) => item.alias === alias);
 
-        hilog.info(Constants.DOMAIN, TAG, "isExist: Alias %{public}s is %{public}s", alias, exists ? "found" : "not found");
+        const exists = dataArray.some((item) => {
+          const aliasMatch = alias ? item.alias === alias : true;
+          const typeMatch = type ? item.type === type : true;
+          return aliasMatch && typeMatch;
+        });
+
+        hilog.info(
+          Constants.DOMAIN,
+          TAG,
+          "isExist: Matching item with alias '%{public}s' and type '%{public}s' is %{public}s",
+          alias || "(any)",
+          type || "(any)",
+          exists ? "found" : "not found"
+        );
+
         return exists;
       } else {
         hilog.info(Constants.DOMAIN, TAG, "isExist: File does not exist.");
@@ -240,5 +258,6 @@ export class WriteToJson {
       throw new Error(`isExist mode fatal: ${e}`);
     }
   }
+
 }
 

@@ -1,0 +1,37 @@
+{
+  "color": [
+    {
+      "name": "background",
+      "value": "#F8F4ED"
+    },
+    {
+      "name": "newSteamTOTP_Button_color",
+      "value": "#4e7ca1"
+    },
+
+
+
+
+
+    {
+      "name": "TOTPView_ListItem_deleteButton",
+      "value": "#ffe84026"
+    },
+    {
+      "name": "TOTPView_ListItem_Progress_start",
+      "value": "#4e7ca1"
+    },
+    {
+      "name": "TOTPView_ListItem_Progress_end",
+      "value": "#93b5cf"
+    },
+    {
+      "name": "TOTPView_ListItem_editButton",
+      "value": "#4e7ca1"
+    },
+    {
+      "name": "TOTPView_ListItem_fontcolor",
+      "value": "#66A9C9"
+    }
+  ]
+}

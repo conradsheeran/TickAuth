@@ -36,11 +36,12 @@ export struct NoKeyInJSON {
   @Link hasKey: boolean;
   @State isConfirm: boolean = false;
   @State CustomDialog_editTOTPItemIsClosed: boolean = false;
+  @Consume("pathStack") pathStack: NavPathStack;
 
   dialogControllerList: CustomDialogController = new CustomDialogController({
     builder: SelectDialog({
       title: '请选择一种添加方式',
-      selectedIndex: 2,
+      selectedIndex: 3,
       confirm: {
         value: '取消',
         action: () => {
@@ -53,19 +54,21 @@ export struct NoKeyInJSON {
           action: async () => {
             try {
               hilog.info(Constants.DOMAIN, TAG, "The ADD button was clicked")
+              CatchSecretByScan(this.context).then((value) => {
+                this.rawSecretParam = value.raw
+                const secretParam = value.SecretParams;
+                this.secret = secretParam.secret;
+                this.digit = secretParam.digits;
+                this.algorithm = secretParam.algorithm;
+                this.timeStep = secretParam.period;
 
-              this.rawSecretParam = (await CatchSecretByScan(this.context)).raw;
-              const secretParam = (await CatchSecretByScan(this.context)).SecretParams;
-              this.secret = secretParam.secret;
-              this.digit = secretParam.digits;
-              this.algorithm = secretParam.algorithm;
-              this.timeStep = secretParam.period;
-              hilog.info(Constants.DOMAIN, TAG, "The SECRET accepted: %{private}s", String(this.alias))
+                hilog.info(Constants.DOMAIN, TAG, "The SECRET accepted: %{private}s", String(this.alias))
 
-              this.editTOTPItem.open()
-              hilog.info(Constants.DOMAIN, TAG, "The editTOTPItem DIALOG opened")
+                this.editTOTPItem.open()
+                hilog.info(Constants.DOMAIN, TAG, "The editTOTPItem DIALOG opened")
+              })
 
-              // Wait for the user to complete the input
+              // 等待用户输入
               while (!this.CustomDialog_editTOTPItemIsClosed) {
                 await new Promise<void>(resolve => setTimeout(resolve, 100));
               }
@@ -74,6 +77,7 @@ export struct NoKeyInJSON {
                 hilog.debug(Constants.DOMAIN, TAG, "The edited alias is %{public}s", this.alias)
 
                 await this.writeToJson.write({
+                  type: "normal",
                   alias: this.alias,
                   secret: this.secret,
                   digit: this.digit,
@@ -100,6 +104,24 @@ export struct NoKeyInJSON {
           title: '手动输入 TOTP 验证码参数',
           action: () => {
             this.newTOTPItem.open()
+          }
+        },
+        {
+          title: '添加 Steam 手机令牌',
+          action: () => {
+            // try {
+            //   this.pathStack.pushPath({ name: "SteamPage" })
+            // } catch (e) {
+            //   promptAction.showToast({
+            //     message: `错误：${e.message} (${TAG})`,
+            //     duration: 2000
+            //   });
+            //   logger.error(Constants.DOMAIN, TAG, "pushPath(SteamPage) Fatal: %{public}s code: {public}d", e.message, e.code)
+            // }
+            promptAction.showToast({
+              message: "部分问题暂未修复，下个版本将修复支持",
+              duration: 2000
+            });
           }
         }
       ]

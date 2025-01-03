@@ -1,5 +1,6 @@
 [
   {
+    "type": "normal",
     "alias": "demo",
     "secret": "B5FLUZMN27GZOF63NVWDLO7ZU2WP7XMI",
     "digit": 6,

@@ -20,15 +20,16 @@ import { TOTP } from "../view/TOTPView"
 
 @Component
 export struct HomePage {
+  @Link pathStack: NavPathStack;
   @Link onForeground: boolean;
   @Link refresh: boolean;
 
   build() {
     Column() {
       if (this.onForeground || this.refresh) {
-        TOTP({ refresh: this.refresh, onForeground: this.onForeground })
+        TOTP({ pathStack: this.pathStack, refresh: this.refresh, onForeground: this.onForeground })
       } else {
-        TOTP({ refresh: this.refresh, onForeground: this.onForeground })
+        TOTP({ pathStack: this.pathStack, refresh: this.refresh, onForeground: this.onForeground })
       }
     }
     .height(Constants.HOMEPAGE_SIZE)
