@@ -54,6 +54,7 @@ struct Index {
   @State isConfirm: boolean = false;
   @State hasSteamKey: boolean = false;
   @State TOTPList_Steam: Array<SecretClass> = [];
+  @State settingsTabIndex: number = 1;
 
   // 弹窗控制器
   dialogControllerList: CustomDialogController = new CustomDialogController({
@@ -335,7 +336,7 @@ struct Index {
 
   @Builder tabBuilder(targetIndex: number, selectedImg: Resource, normalImg: Resource, title?: Resource) {
     Column() {
-      if (targetIndex === 1) {
+      if (targetIndex === 1 && this.hasSteamKey) {
         Image(this.currentIndex === targetIndex ? selectedImg : normalImg)
           .size({ height: 32, width: 32 })
       } else {
@@ -383,6 +384,7 @@ struct Index {
 
       if (value) {
         this.hasSteamKey = value as boolean;
+        this.settingsTabIndex = 2;
       }
     });
 
@@ -445,7 +447,7 @@ struct Index {
         TabContent() {
           Settings();
         }
-        .tabBar(this.tabBuilder(2, $r('sys.symbol.gearshape_fill'), $r('sys.symbol.gearshape')))
+        .tabBar(this.tabBuilder(this.settingsTabIndex, $r('sys.symbol.gearshape_fill'), $r('sys.symbol.gearshape')))
         .backgroundColor($r('app.color.background'));
       }
       .scrollable(false)

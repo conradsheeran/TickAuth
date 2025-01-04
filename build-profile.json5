@@ -5,13 +5,13 @@
         "name": "default",
         "type": "HarmonyOS",
         "material": {
-          "certpath": "C:\\Users\\conra\\.ohos\\config\\default_TickAuth_qOPjDg_RL7HRCNyenzXbb7YwG6HO43KlOThv1max8FA=.cer",
-          "storePassword": "0000001B8A9E2A7E6BC5512B20F909E8871D3D88937BBAA68B4340B348A31F7991C27C44F48A2C59212AB5",
-          "keyAlias": "debugKey",
-          "keyPassword": "0000001B17B2F8DB94BF7FD477C63E2505CDFC56CCD210BFB78EF0C5B798C6912DFAE895470575310EC0AE",
-          "profile": "C:\\Users\\conra\\.ohos\\config\\default_TickAuth_qOPjDg_RL7HRCNyenzXbb7YwG6HO43KlOThv1max8FA=.p7b",
+          "storePassword": "000000216B9D66D4BA35C9B2241773BAD909D5BC6D23AE8CB269F83181C9C73527A5E0504F7D288D8619C80C2F1E9A51BA",
+          "certpath": "C:/Users/conra/.ohos/config/debug_tickauth.cer",
+          "keyAlias": "debug",
+          "keyPassword": "000000219CF0026B20C42849BCDA8E2A83EC0C82C55BAF06F7A5164C99D4F60059750799C044F686B3E4A98CC942817542",
+          "profile": "C:/Users/conra/.ohos/config/debug_tickauthDebug.p7b",
           "signAlg": "SHA256withECDSA",
-          "storeFile": "C:\\Users\\conra\\.ohos\\config\\default_TickAuth_qOPjDg_RL7HRCNyenzXbb7YwG6HO43KlOThv1max8FA=.p12"
+          "storeFile": "C:/Users/conra/.ohos/config/debug_tickauth.p12"
         }
       }
     ],
