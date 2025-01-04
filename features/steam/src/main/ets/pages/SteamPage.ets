@@ -15,12 +15,12 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 import { AddSteamTOTP } from "../view/AddSteamTOTP";
-import { promptAction, SelectDialog, SymbolGlyphModifier } from "@kit.ArkUI";
+import { promptAction, router, SelectDialog, SymbolGlyphModifier } from "@kit.ArkUI";
 import { SteamTOTP } from "steam-totp";
 import { CustomDialog_editSecret } from "uicomponent";
 import { hilog } from "@kit.PerformanceAnalysisKit";
 import { Constants } from "../common/Constants";
-import { Logger, Preference, WriteToJson } from "utils";
+import { Logger, Preference, WriteToJson, sleep } from "utils";
 import { fileIo as fs, picker } from '@kit.CoreFileKit';
 import { BusinessError } from "@kit.BasicServicesKit";
 import { SteamTOTPView } from "../view/SteamTOTPView";
@@ -56,7 +56,11 @@ export struct SteamPage {
     'value': "",
     'symbolIcon': this.refreshSymbol,
     'action': async () => {
-      this.timeOffset = (await SteamTOTP.getTimeOffset()).offset;
+      // this.timeOffset = (await SteamTOTP.getTimeOffset()).offset;
+      promptAction.showToast({
+        message: "开发中，将在后续上线",
+        duration: 2000
+      });
     }
   };
 
@@ -104,7 +108,18 @@ export struct SteamPage {
                     fs.close(file.fd)
                     this.hasSteamKey = true;
                     this.preferences.put("hasSteamKey", true)
-                    //todo: 增加跳转TOTP界面
+
+                    router.pushUrl({ url: 'pages/Index' }, router.RouterMode.Standard).then(() => {
+                      sleep(500).then(() => {
+                        router.clear()
+                      })
+                    }).catch((e: BusinessError) => {
+                      promptAction.showToast({
+                        message: `错误：${e.message} (${TAG})`,
+                        duration: 2000
+                      });
+                      logger.error(Constants.DOMAIN, TAG, "router.pushUrl: %{public}s, %{public}d", e.message, e.code)
+                    })
                   }).catch((e: BusinessError) => {
                     promptAction.showToast({
                       message: `错误：${e.message} (${TAG})`,
@@ -134,7 +149,11 @@ export struct SteamPage {
         {
           title: '手动输入 Steam 手机令牌参数',
           action: () => {
-            this.newSteamTOTP.open()
+            // this.newSteamTOTP.open()
+            promptAction.showToast({
+              message: "开发中，将在下个版本上线",
+              duration: 2000
+            });
           }
         }
       ]

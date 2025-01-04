@@ -73,19 +73,15 @@ struct Index {
         {
           title: '添加 Steam 手机令牌',
           action: () => {
-            // try {
-            //   this.pathStack.pushPath({ name: "SteamPage" })
-            // } catch (e) {
-            //   promptAction.showToast({
-            //     message: `错误：${e.message} (${TAG})`,
-            //     duration: 2000
-            //   });
-            //   logger.error(Constants.DOMAIN, TAG, "pushPath(SteamPage) Fatal: %{public}s code: {public}d", e.message, e.code)
-            // }
+            try {
+              this.pathStack.pushPath({ name: "SteamPage" })
+            } catch (e) {
               promptAction.showToast({
-                message: "部分问题暂未修复，下个版本将修复支持",
+                message: `错误：${e.message} (${TAG})`,
                 duration: 2000
               });
+              logger.error(Constants.DOMAIN, TAG, "pushPath(SteamPage) Fatal: %{public}s code: {public}d", e.message, e.code)
+            }
           }
         }
       ]
@@ -192,9 +188,6 @@ struct Index {
       hilog.debug(Constants.DOMAIN, TAG, "newTOTPItem: User try to exit. Action: %{public}s", dismissDialogAction.reason.toString())
     }
   });
-
-  // 系统图标
-  private plus: SymbolGlyphModifier = new SymbolGlyphModifier($r('sys.symbol.plus'));
 
   // 初始化必要数据
   private context = getContext(this) as common.UIAbilityContext;
@@ -428,7 +421,7 @@ struct Index {
           if (this.hasKey) {
             HomePage({ pathStack: this.pathStack, refresh: this.refresh, onForeground: this.onForeground });
           } else {
-            NoKeyInJSON({ hasKey: this.hasKey });
+            NoKeyInJSON({ hasKey: this.hasKey, hasSteamKey: this.hasSteamKey });
           }
         }
         .tabBar(this.tabBuilder(0, $r('sys.symbol.house_fill'), $r('sys.symbol.house')))

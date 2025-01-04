@@ -98,18 +98,15 @@ struct ImportAndExport {
                 fs.open(documentSelectResult[0], fs.OpenMode.READ_ONLY).then((file) => {
                   fs.readText(file.path).then((content) => {
                     this.writeToJson.append(content.replace(/[\u0000-\u001F\u007F-\u009F]/g, "").trim()).then(() => {
-                      router.pushUrl({
-                        url: 'pages/Index'
-                      }, router.RouterMode.Standard, (e) => {
-                        if (e) {
-                          promptAction.showToast({
-                            message: `错误：${e.message} (${TAG})`,
-                            duration: 2000
-                          });
-                          logger.error(Constants.DOMAIN, TAG, "router.pushUrl: %{public}s, %{public}d", e.message, e.code)
-                          return;
-                        }
-                      });
+                      router.pushUrl({ url: 'pages/Index' }, router.RouterMode.Standard).then(() => {
+                        this.pathStack.removeByName("SteamPage")
+                      }).catch((e: BusinessError) => {
+                        promptAction.showToast({
+                          message: `错误：${e.message} (${TAG})`,
+                          duration: 2000
+                        });
+                        logger.error(Constants.DOMAIN, TAG, "router.pushUrl: %{public}s, %{public}d", e.message, e.code)
+                      })
                       fs.close(file.fd)
                       hilog.info(Constants.DOMAIN, TAG, "WriteToJson Succeed")
                     })

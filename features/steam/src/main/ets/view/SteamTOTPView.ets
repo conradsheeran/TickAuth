@@ -216,7 +216,7 @@ export struct SteamTOTPView {
       hilog.info(Constants.DOMAIN, TAG, "GetSecretFromJson Succeed")
     }).catch((e: BusinessError) => {
       fs.close(file.fd)
-      console.error("!!!!!!!!!!!!!!"+ `${String(e)}`)
+      console.error("!!!!!!!!!!!!!!"+ `${String(e)}`) //todo: 删除测试代码
       // logger.error(Constants.DOMAIN, TAG, "Read JSON file fatal: %{public}s", String(e))
     })
   }
@@ -278,30 +278,34 @@ export struct SteamTOTPView {
     .height($r("app.float.TOTPView_ListItem_Button_size"))
     .margin({ left: 16, right: $r('app.float.TOTPView_ListItem_DeleteButton_margin') })
     .onClick(async () => {
-      try {
-        if (!this.oldPined.length) {
-          this.preferences.put("PinedAlias", [alias])
-          // this.refresh = true
-        } else {
-          if (this.oldPined.some(item => item === alias)) {
-            const index = this.oldPined.indexOf(alias);
-            this.oldPined.splice(index, 1)
-            this.preferences.put("PinedAlias", this.oldPined)
-            // this.refresh = true;
-          } else {
-            let newPined: Array<string> = [...this.oldPined, alias];
-            this.preferences.put("PinedAlias", newPined)
-            // this.refresh = true;
-          }
-        }
-      } catch (e) {
-        promptAction.showToast({
-          message: `错误：${e.message} (${TAG})`,
-          duration: 2000
-        });
-        // logger.error(Constants.DOMAIN, TAG, "Pined: %{public}s, %{public}d", e.message, e.code)
-      }
+      // try {
+      //   if (!this.oldPined.length) {
+      //     this.preferences.put("PinedAlias", [alias])
+      //     // this.refresh = true
+      //   } else {
+      //     if (this.oldPined.some(item => item === alias)) {
+      //       const index = this.oldPined.indexOf(alias);
+      //       this.oldPined.splice(index, 1)
+      //       this.preferences.put("PinedAlias", this.oldPined)
+      //       // this.refresh = true;
+      //     } else {
+      //       let newPined: Array<string> = [...this.oldPined, alias];
+      //       this.preferences.put("PinedAlias", newPined)
+      //       // this.refresh = true;
+      //     }
+      //   }
+      // } catch (e) {
+      //   promptAction.showToast({
+      //     message: `错误：${e.message} (${TAG})`,
+      //     duration: 2000
+      //   });
+      //   // logger.error(Constants.DOMAIN, TAG, "Pined: %{public}s, %{public}d", e.message, e.code)
+      // }
 
+      promptAction.showToast({
+        message: "开发中，将在下个版本上线",
+        duration: 2000
+      });
     })
 
     // 编辑按钮
@@ -315,22 +319,26 @@ export struct SteamTOTPView {
     .height($r("app.float.TOTPView_ListItem_Button_size"))
     .margin({ left: $r('app.float.TOTPView_ListItem_EditButton_margin'), right: $r('app.float.TOTPView_ListItem_DeleteButton_margin') })
     .onClick(async () => {
-      try {
-        this.editTOTPItem_item = item as ISecretItem;
-        this.editTOTPItem_alias = item.alias;
-        this.editTOTPItem_secret = item.secret;
-        this.editTOTPItem.open()
-        while (!this.CustomDialog_editTOTPItem_IsClosed) {
-          await new Promise<void>(resolve => setTimeout(resolve, 100));
-        }
-        this.CustomDialog_editTOTPItem_IsClosed = false;
-      } catch (e) {
-        promptAction.showToast({
-          message: `错误：${e.message} (${TAG})`,
-          duration: 2000
-        });
-        // logger.error(Constants.DOMAIN, TAG, "editTOTPItem_Secret: %{public}s, %{public}d", e.message, e.code)
-      }
+      // try {
+      //   this.editTOTPItem_item = item as ISecretItem;
+      //   this.editTOTPItem_alias = item.alias;
+      //   this.editTOTPItem_secret = item.secret;
+      //   this.editTOTPItem.open()
+      //   while (!this.CustomDialog_editTOTPItem_IsClosed) {
+      //     await new Promise<void>(resolve => setTimeout(resolve, 100));
+      //   }
+      //   this.CustomDialog_editTOTPItem_IsClosed = false;
+      // } catch (e) {
+      //   promptAction.showToast({
+      //     message: `错误：${e.message} (${TAG})`,
+      //     duration: 2000
+      //   });
+      //   // logger.error(Constants.DOMAIN, TAG, "editTOTPItem_Secret: %{public}s, %{public}d", e.message, e.code)
+      // }
+      promptAction.showToast({
+        message: "开发中，将在下个版本上线",
+        duration: 2000
+      });
     })
 
     // 删除按钮
@@ -350,23 +358,27 @@ export struct SteamTOTPView {
     .height($r("app.float.TOTPView_ListItem_Button_size"))
     .margin({ left: $r('app.float.TOTPView_ListItem_DeleteButton_margin') })
     .onClick(() => {
-      try {
-        this.deleteAlias = alias;
-        if (!(this.oldDeleteItem.some(item => item.alias === alias))) {
-          this.warningDelete.open()
-        } else {
-          const index = this.oldDeleteItem.findIndex(item => item.alias === this.deleteAlias);
-          this.oldDeleteItem.splice(index, 1)
-          this.preferences.put("WaitDeleteAlias", this.oldDeleteItem)
-          // this.refresh = true;
-        }
-      } catch (e) {
-        promptAction.showToast({
-          message: `错误：${e.message} (${TAG})`,
-          duration: 2000
-        });
-        // logger.error(Constants.DOMAIN, TAG, "warningDelete: %{public}s, %{public}d", e.message, e.code)
-      }
+      // try {
+      //   this.deleteAlias = alias;
+      //   if (!(this.oldDeleteItem.some(item => item.alias === alias))) {
+      //     this.warningDelete.open()
+      //   } else {
+      //     const index = this.oldDeleteItem.findIndex(item => item.alias === this.deleteAlias);
+      //     this.oldDeleteItem.splice(index, 1)
+      //     this.preferences.put("WaitDeleteAlias", this.oldDeleteItem)
+      //     // this.refresh = true;
+      //   }
+      // } catch (e) {
+      //   promptAction.showToast({
+      //     message: `错误：${e.message} (${TAG})`,
+      //     duration: 2000
+      //   });
+      //   // logger.error(Constants.DOMAIN, TAG, "warningDelete: %{public}s, %{public}d", e.message, e.code)
+      // }
+      promptAction.showToast({
+        message: "开发中，将在下个版本上线",
+        duration: 2000
+      });
     })
   }
 }
