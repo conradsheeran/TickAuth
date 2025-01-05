@@ -5,7 +5,7 @@
 ## 注意：
 
 1. **最低API要求**：API 12（5.0.0.102）
-2. **下载建议**：建议从 AppGallery 下载（目前还未上架，正在申请软件著作权），若使用 DevEco Studio 安装则必须保持开发者模式开启，否则应用无法运行
+2. **下载建议**：建议从 AppGallery 下载，若使用 DevEco Studio 安装则必须保持开发者模式开启，否则应用无法运行
 
 ## 安装指南：
 
@@ -36,9 +36,12 @@ git clone https://github.com/conradsheeran/TickAuth.git
 - [ ] 使用华为账号实现云端同步
 - [x] ~~支持添加 Steam 令牌~~
 - [ ] 增加对平板、可穿戴设备的支持
+- [ ] 增加更多 Steam 功能
+
 
 ## 屏幕截图：
 
-|                                         |                                   |
-|-----------------------------------------|-----------------------------------|
-| ![HomePage](./screenshots/homepage.jpg) | ![Input](./screenshots/input.jpg) |
+|                             |                             |
+|-----------------------------|-----------------------------|
+| ![1](./screenshots/1.png)   | ![2](./screenshots/2.png)   |
+| ![3](./screenshots/3.png)   | ![4](./screenshots/4.png)   |
