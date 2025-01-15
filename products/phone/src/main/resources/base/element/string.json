@@ -10,15 +10,15 @@
     },
     {
       "name": "EntryAbility_label",
-      "value": "滴答"
+      "value": "TickAuth"
     },
     {
       "name": "Title",
-      "value": "滴答"
+      "value": "TickAuth"
     },
     {
       "name": "Disclaimer_title",
-      "value": "欢迎您使用滴答软件"
+      "value": "欢迎您使用 TickAuth"
     },
     {
       "name": "Disclaimer_content1",
@@ -34,7 +34,7 @@
     },
     {
       "name": "Disclaimer_PrivacyPolicyStatement_title",
-      "value": "《关于滴答与隐私的声明》"
+      "value": "《关于 TickAuth 与隐私的声明》"
     },
     {
       "name": "Disclaimer_PrivacyPolicyStatement_explanation",

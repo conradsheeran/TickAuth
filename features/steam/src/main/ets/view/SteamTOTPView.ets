@@ -16,7 +16,7 @@
  */
 
 import { SteamTOTP } from "steam-totp"
-import { ISecretItem, Preference, WriteToJson } from "utils";
+import { ISecretItem, Logger, Preference, WriteToJson } from "utils";
 import { SecretClass, WaitDeleteItemParam } from "../model/SteamTOTPModel";
 import { CustomDialog_editSecret, CustomDialog_Warning } from "uicomponent"
 import { hilog } from "@kit.PerformanceAnalysisKit";
@@ -28,6 +28,7 @@ import { pinyin4js as pinyin } from "@ohos/pinyin4js"
 import { BusinessError, pasteboard } from "@kit.BasicServicesKit";
 
 const TAG: string = "SteamTOTPView"
+const logger = new Logger(getContext(this))
 
 @Component
 export struct SteamTOTPView {
@@ -216,8 +217,7 @@ export struct SteamTOTPView {
       hilog.info(Constants.DOMAIN, TAG, "GetSecretFromJson Succeed")
     }).catch((e: BusinessError) => {
       fs.close(file.fd)
-      console.error("!!!!!!!!!!!!!!"+ `${String(e)}`) //todo: 删除测试代码
-      // logger.error(Constants.DOMAIN, TAG, "Read JSON file fatal: %{public}s", String(e))
+      logger.error(Constants.DOMAIN, TAG, "Read JSON file fatal: %{public}s", String(e))
     })
   }
 
@@ -240,14 +240,23 @@ export struct SteamTOTPView {
               TOTPItem({ totpItem: item })
             }
           }
-          .swipeAction({
-            end: {
-              builder: () => {
-                this.itemEnd(this.TOTPList.indexOf(item), item.alias, item);
-              }
-            }
-          });
+          // .swipeAction({
+          //   end: {
+          //     builder: () => {
+          //       this.itemEnd(this.TOTPList.indexOf(item), item.alias, item);
+          //     }
+          //   }
+          // });
         }, (item: SecretClass) => item.alias)
+
+        ListItem() {
+          Text("更多有趣功能 正在开发中……")
+            .fontSize(12)
+            .fontColor(Color.Gray)
+            .width("85%")
+            .padding(10)
+            .textAlign(TextAlign.Center)
+        }.width("100%")
       }
       .transition(TransitionEffect.OPACITY.animation({ duration: Constants.ANIMATION_DURING }))
       .width(Constants.TOTPVIEW_LIST_SIZE)

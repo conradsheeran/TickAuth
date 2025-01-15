@@ -10,15 +10,15 @@
     },
     {
       "name": "EntryAbility_label",
-      "value": "Tick Authenticator"
+      "value": "TickAuth"
     },
     {
       "name": "Title",
-      "value": "Tick Authenticator"
+      "value": "TickAuth"
     },
     {
       "name": "Disclaimer_title",
-      "value": "Welcome to Tick Authenticator software."
+      "value": "Welcome to TickAuth software."
     },
     {
       "name": "Disclaimer_content1",
@@ -34,7 +34,7 @@
     },
     {
       "name": "Disclaimer_PrivacyPolicyStatement_title",
-      "value": "\"Statement on Tick Authenticator and Privacy\""
+      "value": "\\\"Statement on TickAuth and Privacy\\\""
     },
     {
       "name": "Disclaimer_PrivacyPolicyStatement_explanation",

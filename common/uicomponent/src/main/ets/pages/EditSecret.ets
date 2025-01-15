@@ -237,7 +237,21 @@ export struct CustomDialog_editSecret {
               } catch (e) {
                 logger.error(Constants.DOMAIN, TAG, "new: %{public}s, %{public}d", e.message, e.code)
               }
-            } //todo: 建议直接在弹窗写入，降低代码修改量
+            } else if (this.mode === "newSteamCode") {
+              try {
+                await this.writeToJson.write({
+                  type: "steam",
+                  alias: this.alias,
+                  secret: this.secret,
+                  digit: 5,
+                  timeStep: this.timeStep,
+                  algorithm: this.algorithm,
+                  raw: this.secret
+                });
+              } catch (e) {
+                logger.error(Constants.DOMAIN, TAG, "new: %{public}s, %{public}d", e.message, e.code)
+              }
+            }
             this.controller.close();
             this.confirm();
           } else if (!this.isConfirm) {

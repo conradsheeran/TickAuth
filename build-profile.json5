@@ -5,13 +5,13 @@
         "name": "default",
         "type": "HarmonyOS",
         "material": {
-          "storePassword": "000000216B9D66D4BA35C9B2241773BAD909D5BC6D23AE8CB269F83181C9C73527A5E0504F7D288D8619C80C2F1E9A51BA",
-          "certpath": "C:/Users/conra/.ohos/config/debug_tickauth.cer",
-          "keyAlias": "debug",
-          "keyPassword": "000000219CF0026B20C42849BCDA8E2A83EC0C82C55BAF06F7A5164C99D4F60059750799C044F686B3E4A98CC942817542",
-          "profile": "C:/Users/conra/.ohos/config/debug_tickauthDebug.p7b",
+          "storePassword": "00000021265412F8C0D91CA2B8625275C8C523E1A6BF0C841B467FC8751496E302C8C3A8065664ACC0755C21E2FE7A9A1F",
+          "certpath": "C:/Users/conra/.ohos/config/release_tickauth.cer",
+          "keyAlias": "release",
+          "keyPassword": "0000002103DA9A08867E762DFE922AC98ED5B3DE0BEF87672B4B83112C3ADA64DC8649CEE00A97D7970398D0EB853E482C",
+          "profile": "C:/Users/conra/.ohos/config/release_tickauthRelease.p7b",
           "signAlg": "SHA256withECDSA",
-          "storeFile": "C:/Users/conra/.ohos/config/debug_tickauth.p12"
+          "storeFile": "C:/Users/conra/.ohos/config/release_tickauth.p12"
         }
       }
     ],

@@ -2,8 +2,8 @@
   "app": {
     "bundleName": "com.conrad.tickauth",
     "vendor": "Yang He",
-    "versionCode": 1120100,
-    "versionName": "1.12.1",
+    "versionCode": 1120201,
+    "versionName": "1.12.2",
     "icon": "$media:app_icon",
     "label": "$string:app_name"
   }

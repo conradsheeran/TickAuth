@@ -68,37 +68,38 @@ export struct AddSteamTOTP {
         .backgroundColor(Color.White)
         .width("100%")
         .height("40%")
-        .borderRadius({ topLeft: 16, topRight: 16 })
+        // .borderRadius({ topLeft: 16, topRight: 16 })
+        .borderRadius(16)
         .onClick(() => {
           const url: string = "https://tickauth.com/steam-totp"
           new JumpToApp(getContext(this) as common.UIAbilityContext).browser(url)
         })
 
-        ListItem() {
-          Row() {
-            Text("获取 Steam 令牌密钥")
-              .margin({ left: 12 })
-
-            Blank()
-
-            SymbolGlyph($r('sys.symbol.chevron_right'))
-              .fontSize(20)
-              .margin({ right: 18 })
-          }
-          .width("100%")
-          .height("100%")
-        }
-        .align(Alignment.Start)
-        .backgroundColor(Color.White)
-        .width("100%")
-        .height("40%")
-        .borderRadius({ bottomLeft: 16, bottomRight: 16 })
-        .onClick(() => {
-          promptAction.showToast({
-            message: "暂不支持该功能，请点击右上角导入密钥",
-            duration: 2500
-          });
-        })
+        // ListItem() {
+        //   Row() {
+        //     Text("获取 Steam 令牌密钥")
+        //       .margin({ left: 12 })
+        //
+        //     Blank()
+        //
+        //     SymbolGlyph($r('sys.symbol.chevron_right'))
+        //       .fontSize(20)
+        //       .margin({ right: 18 })
+        //   }
+        //   .width("100%")
+        //   .height("100%")
+        // }
+        // .align(Alignment.Start)
+        // .backgroundColor(Color.White)
+        // .width("100%")
+        // .height("40%")
+        // .borderRadius({ bottomLeft: 16, bottomRight: 16 })
+        // .onClick(() => {
+        //   promptAction.showToast({
+        //     message: "暂不支持该功能，请点击右上角导入密钥",
+        //     duration: 2500
+        //   });
+        // })
       }
       .scrollBar(BarState.Off)
       .divider({ strokeWidth: 1 })

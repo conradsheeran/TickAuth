@@ -16,7 +16,6 @@
  */
 import { AddSteamTOTP } from "../view/AddSteamTOTP";
 import { promptAction, router, SelectDialog, SymbolGlyphModifier } from "@kit.ArkUI";
-import { SteamTOTP } from "steam-totp";
 import { CustomDialog_editSecret } from "uicomponent";
 import { hilog } from "@kit.PerformanceAnalysisKit";
 import { Constants } from "../common/Constants";
@@ -50,21 +49,8 @@ export struct SteamPage {
   private preferences = new Preference(getContext(this), "Preferences");
 
   private plus: SymbolGlyphModifier = new SymbolGlyphModifier($r('sys.symbol.plus'));
-  private refreshSymbol: SymbolGlyphModifier = new SymbolGlyphModifier($r('sys.symbol.arrow_clockwise'));
 
-  private TitleMenuItem1: NavigationMenuItem = {
-    'value': "",
-    'symbolIcon': this.refreshSymbol,
-    'action': async () => {
-      // this.timeOffset = (await SteamTOTP.getTimeOffset()).offset;
-      promptAction.showToast({
-        message: "开发中，将在后续上线",
-        duration: 2000
-      });
-    }
-  };
-
-  private TitleMenuItem2: NavigationMenuItem = {
+  private TitleMenuItem: NavigationMenuItem = {
     'value': "",
     'symbolIcon': this.plus,
     'action': () => {
@@ -149,11 +135,7 @@ export struct SteamPage {
         {
           title: '手动输入 Steam 手机令牌参数',
           action: () => {
-            // this.newSteamTOTP.open()
-            promptAction.showToast({
-              message: "开发中，将在下个版本上线",
-              duration: 2000
-            });
+            this.newSteamTOTP.open()
           }
         }
       ]
@@ -168,7 +150,20 @@ export struct SteamPage {
         },
 
         confirm: async () => {
-          //
+          this.hasSteamKey = true;
+          this.preferences.put("hasSteamKey", true)
+
+          router.pushUrl({ url: 'pages/Index' }, router.RouterMode.Standard).then(() => {
+            sleep(500).then(() => {
+              router.clear()
+            })
+          }).catch((e: BusinessError) => {
+            promptAction.showToast({
+              message: `错误：${e.message} (${TAG})`,
+              duration: 2000
+            });
+            logger.error(Constants.DOMAIN, TAG, "router.pushUrl: %{public}s, %{public}d", e.message, e.code)
+          })
         },
 
         symbol: $r('sys.symbol.plus_square_on_square'),
@@ -214,7 +209,7 @@ export struct SteamPage {
     }
     .backgroundColor($r('app.color.background'))
     .title('Steam', { backgroundColor: "#93B5CF" })
-    .menus([this.TitleMenuItem1, this.TitleMenuItem2])
+    .menus([this.TitleMenuItem])
     .onBackPressed(() => {
       this.pathStack.pop()
       return true;

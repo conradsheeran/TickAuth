@@ -77,7 +77,7 @@ struct Index {
               this.pathStack.pushPath({ name: "SteamPage" })
             } catch (e) {
               promptAction.showToast({
-                message: `错误：${e.message} (${TAG})`,
+                message: `错误：进入 Steam 界面失败，请尝试重启应用`,
                 duration: 2000
               });
               logger.error(Constants.DOMAIN, TAG, "pushPath(SteamPage) Fatal: %{public}s code: {public}d", e.message, e.code)
@@ -318,7 +318,7 @@ struct Index {
           }
         } catch (e) {
           promptAction.showToast({
-            message: `错误：${e.message} (${TAG})`,
+            message: `错误：添加失败，请重新尝试`,
             duration: 2000
           });
           logger.error(Constants.DOMAIN, TAG, "ADD button: %{public}s", String(e));
